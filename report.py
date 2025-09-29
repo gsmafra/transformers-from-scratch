@@ -95,6 +95,4 @@ def generate_run_report(run: Any, run_artifacts: Dict[str, Any], prefix: str = "
             k("eval/confusion"): wandb.plot.confusion_matrix(y_true=y_arr, preds=preds_arr, class_names=["0", "1"])
         })
 
-    # --- Distributions ---
-    if probabilities is not None:
-        run.log({k("distributions/probabilities"): wandb.Histogram(probabilities)})
+    # Distributions are logged during training with proper per-model steps.

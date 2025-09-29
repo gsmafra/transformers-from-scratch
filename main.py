@@ -4,8 +4,6 @@ from report import generate_run_report
 from training import run_training
 
 
-EPOCHS = 1000
-LEARNING_RATE = 1
 SEQUENCE_LENGTH = 4
 N_SAMPLES = 100
 
@@ -13,7 +11,6 @@ N_SAMPLES = 100
 def main():
     run = wandb.init(
         project="transformer-scratchpad",
-        config={"epochs": EPOCHS, "lr": LEARNING_RATE},
         settings=wandb.Settings(_disable_stats=True),  # disable W&B system metrics
     )
 
@@ -45,8 +42,6 @@ def main():
             })
 
     run_artifacts = run_training(
-        epochs=EPOCHS,
-        learning_rate=LEARNING_RATE,
         sequence_length=SEQUENCE_LENGTH,
         n_samples=N_SAMPLES,
         seed=0,
