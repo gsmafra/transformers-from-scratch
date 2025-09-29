@@ -1,32 +1,41 @@
 from typing import Tuple
 
 import torch
-from torch import manual_seed, rand, randn, tensor, Tensor, where
-from torch.distributions import Normal
+from torch import manual_seed, randn, Tensor
 
 
 def prepare_data(sequence_length: int, n_samples: int, seed: int = 0) -> Tuple[Tensor, Tensor]:
-    """Generate sequences and noisy labels.
+    """Generate sequences and labels for a mixed-rule scoring task.
 
-    - X ~ Normal(mu, 1) with mu chosen so P(any x > 0) ≈ 0.5
-    - y = 1 if any timestep > 0, else 0
-    - 10% label noise (flip)
+    Rules (0-based indexing):
+    - Odd indices (1, 3, ...): condition is x_t > 0
+    - Even indices (0, 2, ...): condition is |x_t| > 0.67448975
+    Scoring: +1 if the index's condition is satisfied, -1 otherwise (0 contributes 0).
+    Label: y = 1 if the total score across timesteps is > 0, else 0.
+
     Returns:
-      x: (n_samples, sequence_length, 1)
+      x: (n_samples, sequence_length, 1) drawn from N(0, 1)
       y: (n_samples,)
     """
     manual_seed(seed)
 
-    # Choose per-timestep positive rate p so that 1 - (1 - p)^T ≈ 0.5
-    p_target = 1.0 - 0.5 ** (1.0 / float(sequence_length))
-    mu = Normal(0.0, 1.0).icdf(tensor(p_target)).item()
+    # Zero-mean data keeps the task roughly balanced
+    x = randn(n_samples, sequence_length, 1)
 
-    x = randn(n_samples, sequence_length, 1) + mu
-    y = (x.squeeze(-1).max(dim=1).values > 0).float()
+    x2d = x.squeeze(-1)  # (n, T)
+    idx = torch.arange(sequence_length, device=x.device)
+    odd_mask = (idx % 2 == 1)
+    even_mask = ~odd_mask
 
-    # Inject label noise: flip label with 10% probability per sample
-    flip = (rand(n_samples) < 0.10).float()
-    y = where(flip > 0, 1.0 - y, y)
+    # Scores: +1 if condition met, -1 otherwise
+    odd_scores = torch.where(x2d[:, odd_mask] > 0, torch.ones_like(x2d[:, odd_mask]), -torch.ones_like(x2d[:, odd_mask]))
+    even_scores = torch.where(
+        torch.abs(x2d[:, even_mask]) > 0.67448975,
+        torch.ones_like(x2d[:, even_mask]),
+        -torch.ones_like(x2d[:, even_mask]),
+    )
+
+    points = odd_scores.sum(dim=1) + even_scores.sum(dim=1)
+    y = (points > 0).float()
 
     return x, y
-

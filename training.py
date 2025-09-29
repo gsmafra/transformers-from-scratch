@@ -12,13 +12,11 @@ class SimpleTemporalPoolingClassifier(Module):
     def __init__(self, sequence_length: int, d_model: int = 16) -> None:
         super().__init__()
         self.proj = Linear(1, d_model)
-        # Classifier operates over timesteps (length T)
         self.classifier = Sequential(Linear(sequence_length, 1), Sigmoid())
 
     def forward(self, x_flat: Tensor) -> Tensor:
         # x_flat: (N, T)
         h = tanh(self.proj(x_flat.unsqueeze(-1)))  # (N, T, d)
-        # Compress feature dimension, keep timesteps
         pooled = h.mean(dim=-1)  # (N, T)
         return self.classifier(pooled)  # (N, 1)
 

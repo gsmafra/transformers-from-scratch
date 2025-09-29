@@ -6,7 +6,7 @@
 
 **How It Works**
 
-- Data: generated on the fly in `training.py`. Current target is “any x > 0” with about 50% positives and 10% label noise.
+- Data: generated in `data.py` and imported in `training.py`. Current task is a mixed‑rule scoring problem on zero‑mean Gaussian sequences: odd indices use `x_t > 0`, even indices use `|x_t| > 0.67448975`; each timestep contributes +1/−1 and `y=1` if the total score > 0.
 - Models (both train each run):
   - `logreg`: logistic regression over the flattened sequence (linear baseline).
   - `temporal`: simple per‑timestep projection, mean over features to `(N, T)`, then a classifier over timesteps (a small step toward sequence modeling).
@@ -19,14 +19,15 @@
   - Orchestrates a run, sets W&B settings, defines per‑model step metrics, and supplies a unified logger callback.
   - Calls `run_training(...)` and then `generate_run_report(...)` for each model under `logreg/` and `temporal/` prefixes.
 - `training.py`
-  - `prepare_data(sequence_length, n_samples, seed)`: creates sequences with skewed normals so that `P(any x > 0) ≈ 0.5`, then injects 10% label noise.
+  - Imports `prepare_data(...)` from `data.py` to create sequences for the mixed‑rule scoring task described above.
   - `build_logreg(sequence_length)`: linear baseline.
   - `build_model(sequence_length)`: simple temporal pooling classifier.
-  - `train_model(model, x, y, epochs, learning_rate, model_name, on_log, hist_every)`: shared loop; returns artifacts.
+  - `ModelAccess` wrappers: `LogRegAccess` and `TemporalAccess` unify the training interface and expose the final linear layer for diagnostics.
+  - `train_model(model: ModelAccess, x, y, on_log, hist_every)`: shared loop; epochs and learning rate are taken from the `model`.
   - `run_training(...)`: prepares data once, trains both models, returns artifacts as `{"logreg": ..., "temporal": ...}`.
 - `report.py`
-  - `generate_run_report(run, artifacts, prefix="")`: logs W&B panels (metrics histories, ROC/PR/confusion, distributions) under the provided prefix.
-- `pyproject.toml`: dependencies (torch, wandb, numpy, pandas, matplotlib).
+  - `generate_run_report(run, artifacts, prefix="")`: logs W&B panels (metrics histories, ROC/PR/confusion) under the provided prefix.
+- `pyproject.toml`: dependencies (torch, wandb, numpy, pandas, matplotlib, scikit‑learn, tqdm).
 
 **Run It**
 
@@ -46,7 +47,7 @@
 **Progression Plan (Curriculum)**
 
 - Start simple (linearly separable): trend sign, last > first.
-- Non‑linear signals: XOR of endpoints; “any x > 0” (current); “majority > 0”; parity of sign changes; max/min positions.
+- Non‑linear signals: XOR of endpoints; “any x > 0”; mixed‑rule scoring (current); “majority > 0”; parity of sign changes; max/min positions.
 - Add positional information: absolute/relative position features; learned positional embeddings.
 - Increase expressiveness of the challenger:
   - Per‑timestep projection + pooling (current).
@@ -60,7 +61,9 @@
 
 - Add a new challenger: implement a builder that returns a `torch.nn.Module` producing probabilities `(N, 1)` and wire it into `run_training`.
 - Add tasks: tweak `prepare_data` to generate new targets; keep difficulty incremental.
-- Tuning: adjust `EPOCHS`, `LEARNING_RATE`, and `hist_every` in `main.py`.
+- Tuning:
+  - Adjust `SEQUENCE_LENGTH`, `N_SAMPLES`, and `hist_every` in `main.py`.
+  - Adjust `epochs` and `lr` in the `LogRegAccess`/`TemporalAccess` defaults in `training.py` (or extend the code to pass them from `main.py`).
 
 **Notes**
 

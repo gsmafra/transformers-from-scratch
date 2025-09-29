@@ -4,8 +4,8 @@ from report import generate_run_report
 from training import run_training
 
 
-SEQUENCE_LENGTH = 4
-N_SAMPLES = 100
+SEQUENCE_LENGTH = 5
+N_SAMPLES = 1000
 
 
 def main():
