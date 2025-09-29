@@ -27,7 +27,7 @@
   - `run_training(...)`: prepares data once, trains both models, returns artifacts as `{"logreg": ..., "temporal": ...}`.
 - `report.py`
   - `generate_run_report(run, artifacts, prefix="")`: logs W&B panels (metrics histories, ROC/PR/confusion) under the provided prefix.
-- `pyproject.toml`: dependencies (torch, wandb, numpy, pandas, matplotlib, scikit‑learn, tqdm).
+- `pyproject.toml`: dependencies (torch, wandb, numpy).
 
 **Run It**
 
