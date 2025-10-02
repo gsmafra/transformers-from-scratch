@@ -6,7 +6,9 @@
 
 **How It Works**
 
-- Data: generated in `data.py` and imported in `training.py`. Current task is the "sign of the winner": for each sequence, find the index of the maximum absolute value and set `y=1` if that winning value is positive, else `0`.
+- Data: generated in `data.py` and imported in `training.py`. Multiple dummy tasks are available under `TASKS` with a configurable default via `DEFAULT_TASK`:
+  - `sign_of_winner`: `y=1` if the argmax of `|x_t|` is positive.
+  - `has_pos_and_neg` (default): `y=1` if the sequence contains at least one positive and one negative value.
 - Models (train each run):
   - `logreg`: logistic regression over the flattened sequence (linear baseline).
   - `temporal`: per‑timestep projection, mean over features to `(N, T)`, then a classifier over timesteps.
