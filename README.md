@@ -19,12 +19,13 @@
 - `main.py`
   - Orchestrates a run, sets W&B settings, defines per‑model step metrics, and supplies a unified logger callback.
   - Calls `run_training(...)` and then `generate_run_report(...)` for each model under `logreg/` and `temporal/` prefixes.
+- `models.py`
+  - Model definitions: `SimpleTemporalPoolingClassifier`, `AttentionPoolingClassifier`.
+  - Builders: `build_logreg(sequence_length)`, `build_model(sequence_length)`.
+  - Access wrappers: `LogRegAccess`, `TemporalAccess`, `AttentionAccess` unify the training interface and expose the final Linear for diagnostics.
 - `training.py`
-  - Imports `prepare_data(...)` from `data.py` to create sequences for the sign‑of‑the‑winner task.
-  - `build_logreg(sequence_length)`: linear baseline.
-  - `build_model(sequence_length)`: simple temporal pooling classifier.
-  - `ModelAccess` wrappers: `LogRegAccess`, `TemporalAccess`, and `AttentionAccess` unify the training interface and expose the final linear layer for diagnostics.
-  - `train_model(model: ModelAccess, x, y, on_log, hist_every)`: shared loop; epochs and learning rate are taken from the `model`.
+  - Imports `prepare_data(...)` and the access wrappers from `models.py`.
+  - `train_model(model: ModelAccess, x, y, on_log, hist_every)`: shared loop; epochs and learning rate come from the `model`.
   - `run_training(...)`: prepares data once, trains three models, returns artifacts as `{"logreg": ..., "temporal": ..., "attention": ...}`.
 - `report.py`
   - `generate_run_report(run, artifacts, prefix="")`: logs W&B panels (metrics histories, ROC/PR/confusion) under the provided prefix.
@@ -64,7 +65,7 @@
 - Add tasks: tweak `prepare_data` to generate new targets; keep difficulty incremental.
 - Tuning:
   - Adjust `SEQUENCE_LENGTH`, `N_SAMPLES`, and `hist_every` in `main.py`.
-  - Adjust `epochs` and `lr` in the `LogRegAccess`/`TemporalAccess` defaults in `training.py` (or extend the code to pass them from `main.py`).
+  - Adjust `epochs` and `lr` in the access wrappers in `models.py` (or extend the code to pass them from `main.py`).
 
 **Notes**
 
