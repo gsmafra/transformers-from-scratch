@@ -1,12 +1,13 @@
 from typing import Any, Callable, Dict, Tuple
 from abc import ABC, abstractmethod
 
-from torch import logit, no_grad, tanh, Tensor
+from torch import logit, no_grad, softmax, tanh, Tensor
 from torch.nn import BCELoss, Linear, Sequential, Sigmoid, Module
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import SGD
 
 from data import prepare_data
+
 
 class SimpleTemporalPoolingClassifier(Module):
     def __init__(self, sequence_length: int, d_model: int = 16) -> None:
@@ -18,6 +19,22 @@ class SimpleTemporalPoolingClassifier(Module):
         # x_flat: (N, T)
         h = tanh(self.proj(x_flat.unsqueeze(-1)))  # (N, T, d)
         pooled = h.mean(dim=-1)  # (N, T)
+        return self.classifier(pooled)  # (N, 1)
+
+
+class AttentionPoolingClassifier(Module):
+    def __init__(self, d_model: int = 16) -> None:
+        super().__init__()
+        self.proj = Linear(1, d_model)
+        self.scorer = Linear(d_model, 1)
+        self.classifier = Sequential(Linear(d_model, 1), Sigmoid())
+
+    def forward(self, x_flat: Tensor) -> Tensor:
+        # x_flat: (N, T)
+        hidden = tanh(self.proj(x_flat.unsqueeze(-1)))  # (N, T, d)
+        scores = self.scorer(hidden).squeeze(-1)  # (N, T)
+        attn = softmax(scores, dim=1)  # (N, T)
+        pooled = (attn.unsqueeze(-1) * hidden).sum(dim=1)  # (N, d)
         return self.classifier(pooled)  # (N, 1)
 
 
@@ -74,6 +91,19 @@ class TemporalAccess(ModelAccess):
         super().__init__(
             name="temporal",
             backbone=build_model(sequence_length),
+            epochs=epochs,
+            lr=lr,
+        )
+
+    def final_linear(self) -> Linear:
+        return self.backbone.classifier[0]  # type: ignore[attr-defined,index]
+
+
+class AttentionAccess(ModelAccess):
+    def __init__(self, *, epochs: int = 1000, lr: float = 0.1, d_model: int = 16) -> None:
+        super().__init__(
+            name="attention",
+            backbone=AttentionPoolingClassifier(d_model=d_model),
             epochs=epochs,
             lr=lr,
         )
@@ -197,6 +227,7 @@ def run_training(
     models = {
         "logreg": LogRegAccess(sequence_length=sequence_length),
         "temporal": TemporalAccess(sequence_length=sequence_length),
+        "attention": AttentionAccess(),
     }
 
     results: Dict[str, Dict[str, Any]] = {}

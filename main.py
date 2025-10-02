@@ -17,10 +17,11 @@ def main():
     # Use model-specific step metrics to avoid global step collisions
     wandb.define_metric("logreg/*", step_metric="logreg/step")
     wandb.define_metric("temporal/*", step_metric="temporal/step")
+    wandb.define_metric("attention/*", step_metric="attention/step")
 
     # Unified logger: metrics + optional distributions, per model prefix
     def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
-        to_log = {
+        merged = {
             f"{model_name}/metrics/loss": metrics.get("loss"),
             f"{model_name}/metrics/accuracy": metrics.get("accuracy"),
             f"{model_name}/metrics/grad_norm": metrics.get("grad_norm"),
@@ -28,18 +29,12 @@ def main():
             f"{model_name}/metrics/bias_abs": metrics.get("bias_abs"),
             f"{model_name}/step": epoch,
         }
-        run.log(to_log)
-
         if probs is not None:
-            run.log({
-                f"{model_name}/distributions/probabilities": wandb.Histogram(probs, num_bins=30),
-                f"{model_name}/step": epoch,
-            })
+            merged[f"{model_name}/distributions/probabilities"] = wandb.Histogram(probs, num_bins=30)
         if logits is not None:
-            run.log({
-                f"{model_name}/distributions/logits": wandb.Histogram(logits, num_bins=30),
-                f"{model_name}/step": epoch,
-            })
+            merged[f"{model_name}/distributions/logits"] = wandb.Histogram(logits, num_bins=30)
+        # Single commit per epoch per model to keep steps tidy
+        run.log(merged)
 
     run_artifacts = run_training(
         sequence_length=SEQUENCE_LENGTH,
@@ -55,6 +50,8 @@ def main():
             generate_run_report(run, run_artifacts["logreg"], prefix="logreg")
         if "temporal" in run_artifacts:
             generate_run_report(run, run_artifacts["temporal"], prefix="temporal")
+        if "attention" in run_artifacts:
+            generate_run_report(run, run_artifacts["attention"], prefix="attention")
     else:
         generate_run_report(run, run_artifacts)
 

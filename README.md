@@ -6,10 +6,11 @@
 
 **How It Works**
 
-- Data: generated in `data.py` and imported in `training.py`. Current task is a mixed‑rule scoring problem on zero‑mean Gaussian sequences: odd indices use `x_t > 0`, even indices use `|x_t| > 0.67448975`; each timestep contributes +1/−1 and `y=1` if the total score > 0.
-- Models (both train each run):
+- Data: generated in `data.py` and imported in `training.py`. Current task is the "sign of the winner": for each sequence, find the index of the maximum absolute value and set `y=1` if that winning value is positive, else `0`.
+- Models (train each run):
   - `logreg`: logistic regression over the flattened sequence (linear baseline).
-  - `temporal`: simple per‑timestep projection, mean over features to `(N, T)`, then a classifier over timesteps (a small step toward sequence modeling).
+  - `temporal`: per‑timestep projection, mean over features to `(N, T)`, then a classifier over timesteps.
+  - `attention`: learned attention pooling over timesteps producing a `(N, 1)` probability.
 - Training loop: shared for both models; logs per‑epoch metrics and periodic distributions via a unified callback.
 - Reporting: end‑of‑run evaluation panels (ROC/PR/confusion) are created for both models with separate prefixes.
 
@@ -19,12 +20,12 @@
   - Orchestrates a run, sets W&B settings, defines per‑model step metrics, and supplies a unified logger callback.
   - Calls `run_training(...)` and then `generate_run_report(...)` for each model under `logreg/` and `temporal/` prefixes.
 - `training.py`
-  - Imports `prepare_data(...)` from `data.py` to create sequences for the mixed‑rule scoring task described above.
+  - Imports `prepare_data(...)` from `data.py` to create sequences for the sign‑of‑the‑winner task.
   - `build_logreg(sequence_length)`: linear baseline.
   - `build_model(sequence_length)`: simple temporal pooling classifier.
-  - `ModelAccess` wrappers: `LogRegAccess` and `TemporalAccess` unify the training interface and expose the final linear layer for diagnostics.
+  - `ModelAccess` wrappers: `LogRegAccess`, `TemporalAccess`, and `AttentionAccess` unify the training interface and expose the final linear layer for diagnostics.
   - `train_model(model: ModelAccess, x, y, on_log, hist_every)`: shared loop; epochs and learning rate are taken from the `model`.
-  - `run_training(...)`: prepares data once, trains both models, returns artifacts as `{"logreg": ..., "temporal": ...}`.
+  - `run_training(...)`: prepares data once, trains three models, returns artifacts as `{"logreg": ..., "temporal": ..., "attention": ...}`.
 - `report.py`
   - `generate_run_report(run, artifacts, prefix="")`: logs W&B panels (metrics histories, ROC/PR/confusion) under the provided prefix.
 - `pyproject.toml`: dependencies (torch, wandb, numpy).
@@ -34,7 +35,7 @@
 - Prereqs: Python 3.8+, Torch, W&B account or offline mode.
 - Auth: the code does not contain credentials; run `wandb login` once or set `WANDB_API_KEY`.
 - Start training: `python main.py`
-  - W&B charts appear under `logreg/*` and `temporal/*` namespaces.
+  - W&B charts appear under `logreg/*`, `temporal/*`, and `attention/*` namespaces.
 - Offline: `WANDB_MODE=offline python main.py` (logs saved locally and can be synced later).
 
 **What Gets Logged**
@@ -50,8 +51,8 @@
 - Non‑linear signals: XOR of endpoints; “any x > 0”; mixed‑rule scoring (current); “majority > 0”; parity of sign changes; max/min positions.
 - Add positional information: absolute/relative position features; learned positional embeddings.
 - Increase expressiveness of the challenger:
-  - Per‑timestep projection + pooling (current).
-  - Attention pooling with a learned query.
+  - Per‑timestep projection + pooling.
+  - Attention pooling with a learned query (implemented).
   - Single‑head self‑attention block over timesteps.
   - Multi‑head self‑attention + residual + layer norm.
   - Transformer encoder layer(s) with positional encodings.
