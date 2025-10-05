@@ -15,9 +15,18 @@ def main():
     )
 
     # Use model-specific step metrics to avoid global step collisions
-    wandb.define_metric("logreg/*", step_metric="logreg/step")
-    wandb.define_metric("temporal/*", step_metric="temporal/step")
-    wandb.define_metric("attention/*", step_metric="attention/step")
+    # Explicitly bind only metrics and distributions under each namespace
+    wandb.define_metric("logreg/step")
+    wandb.define_metric("temporal/step")
+    wandb.define_metric("attention/step")
+
+    wandb.define_metric("logreg/metrics/*", step_metric="logreg/step")
+    wandb.define_metric("temporal/metrics/*", step_metric="temporal/step")
+    wandb.define_metric("attention/metrics/*", step_metric="attention/step")
+
+    wandb.define_metric("logreg/distributions/*", step_metric="logreg/step")
+    wandb.define_metric("temporal/distributions/*", step_metric="temporal/step")
+    wandb.define_metric("attention/distributions/*", step_metric="attention/step")
 
     # Unified logger: metrics + optional distributions, per model prefix
     def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
@@ -26,7 +35,6 @@ def main():
             f"{model_name}/metrics/accuracy": metrics.get("accuracy"),
             f"{model_name}/metrics/grad_norm": metrics.get("grad_norm"),
             f"{model_name}/metrics/weight_norm": metrics.get("weight_norm"),
-            f"{model_name}/metrics/bias_abs": metrics.get("bias_abs"),
             f"{model_name}/step": epoch,
         }
         if probs is not None:

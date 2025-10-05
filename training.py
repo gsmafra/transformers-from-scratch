@@ -60,7 +60,6 @@ def train_model(
 
             # Parameter norms
             weight_norm = float(final_linear.weight.detach().norm().item())
-            bias_abs = float(final_linear.bias.detach().abs().mean().item())
 
         # Prepare optional distributions for logging at cadence
         probs_np = None
@@ -80,7 +79,6 @@ def train_model(
                 "accuracy": acc_epoch,
                 "grad_norm": grad_norm,
                 "weight_norm": weight_norm,
-                "bias_abs": bias_abs,
             },
             probs_np,
             logits_np,

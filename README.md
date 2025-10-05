@@ -43,7 +43,7 @@
 
 **What Gets Logged**
 
-- Per‑epoch scalars per model: `metrics/loss`, `metrics/accuracy`, `metrics/grad_norm`, `metrics/weight_norm`, `metrics/bias_abs`.
+- Per‑epoch scalars per model: `metrics/loss`, `metrics/accuracy`, `metrics/grad_norm`, `metrics/weight_norm`.
 - Distributions every `hist_every` epochs: probabilities and logits histograms.
 - End‑of‑run eval per model: ROC curve, PR curve, confusion matrix.
 - W&B steps: model‑specific step metrics (`logreg/step`, `temporal/step`) avoid global step collisions.
