@@ -1,29 +1,9 @@
 from typing import Callable, Dict, Tuple, Optional
+from abc import ABC, abstractmethod
 
 import torch
 from torch import Tensor, manual_seed, randn
 
-
-# --- Task collection --------------------------------------------------------
-
-def label_sign_of_winner(x2d: Tensor) -> Tensor:
-    """y=1 if the argmax of |x_t| is positive, else 0."""
-    winner_idx = torch.argmax(torch.abs(x2d), dim=1)  # (n,)
-    winner_vals = x2d.gather(1, winner_idx.unsqueeze(1)).squeeze(1)  # (n,)
-    return (winner_vals > 0).float()
-
-
-def label_has_pos_and_neg(x2d: Tensor) -> Tensor:
-    """y=1 if there is at least one positive AND one negative in the sequence, else 0."""
-    has_pos = (x2d > 0).any(dim=1)
-    has_neg = (x2d < 0).any(dim=1)
-    return (has_pos & has_neg).float()
-
-
-TASKS: Dict[str, Callable[[Tensor], Tensor]] = {
-    "sign_of_winner": label_sign_of_winner,
-    "has_pos_and_neg": label_has_pos_and_neg,
-}
 
 # Set which task the code points to by default
 DEFAULT_TASK = "has_pos_and_neg"
@@ -39,73 +19,113 @@ def prepare_data(
 ) -> Tuple[Tensor, Tensor]:
     """Generate sequences and labels for a selected dummy task.
 
-    This variant uses `n_features` features per timestep. Task labelers operate
-    on the per‑timestep sum across features.
+    Inputs have `n_features` per timestep. Each Task implements `label(x)` so
+    labeling logic lives within the task, not as free functions.
 
-    Tasks:
-      - sign_of_winner: y=1 if argmax |sum_t| is positive else 0
-      - has_pos_and_neg: y=1 if the summed sequence contains at least one
-        positive and one negative value
-
-    Returns:
-      x: (n_samples, sequence_length, n_features)
-      y: (n_samples,)
+    Returns `(x, y)` with shapes `(n_samples, sequence_length, n_features)` and
+    `(n_samples,)` respectively.
     """
     manual_seed(seed)
 
     task_name = task or DEFAULT_TASK
-    if task_name not in TASKS:
-        raise ValueError(f"Unknown task '{task_name}'. Available: {list(TASKS.keys())}")
 
-    # Special balanced generation for has_pos_and_neg
-    if task_name == "has_pos_and_neg":
-        # First build a balanced summed sequence, then split it into features
-        sum_seq, y = _generate_balanced_has_pos_and_neg(n_samples, sequence_length)
-        if n_features < 1:
-            raise ValueError("n_features must be >= 1")
-        # Create n_features-1 random components (shape may have last dim 0)
-        comps = randn(n_samples, sequence_length, max(n_features - 1, 0))
-        partial_sum = comps.sum(dim=-1)  # (n, T); zeros if last dim is 0
-        last = sum_seq - partial_sum  # (n, T)
-        x3d = torch.cat([comps, last.unsqueeze(-1)], dim=-1)  # (n, T, n_features)
-        return x3d, y
+    TASK_REGISTRY: Dict[str, "Task"] = {
+        "sign_of_winner": SignOfWinnerTask(),
+        "has_pos_and_neg": HasPosAndNegTask(),
+        "has_all_tokens": HasAllTokensTask(),
+    }
 
-    # Default: iid Gaussian sequences with n_features + task labeler on the sum
-    x = randn(n_samples, sequence_length, n_features)
-    sum_seq = x.sum(dim=-1)  # (n, T)
-    y = TASKS[task_name](sum_seq)
-    return x, y
+    if task_name not in TASK_REGISTRY:
+        raise ValueError(f"Unknown task '{task_name}'. Available: {list(TASK_REGISTRY.keys())}")
+
+    # Generate candidates then stratified sample 50/50 with replacement
+    n_cand = max(10 * n_samples, 512)
+    x_cand, y_cand = TASK_REGISTRY[task_name].generate_candidates(n_cand, sequence_length, n_features)
+    # If a class is missing, fail fast and surface a clear error
+    if (y_cand > 0.5).sum() == 0 or (y_cand <= 0.5).sum() == 0:
+        raise ValueError("Candidate pool missing a class; increase candidate size or adjust task parameters.")
+    return stratified_sample_balanced(x_cand, y_cand, n_samples)
+
+# --- Task classes -----------------------------------------------------------
+
+class Task(ABC):
+    @abstractmethod
+    def label(self, x: Tensor) -> Tensor:
+        """Compute labels for inputs `x`.
+
+        x: (n, T, F) features (or one-hot token features for token tasks)
+        return: (n,) floats in {0.0, 1.0}
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def generate_candidates(self, n: int, T: int, F: int) -> Tuple[Tensor, Tensor]:
+        """Return candidate inputs x and labels y.
+
+        x: (n, T, F) float features or one-hot token features
+        y: (n,) floats in {0.0, 1.0}
+        """
+        raise NotImplementedError
 
 
-def _generate_balanced_has_pos_and_neg(n_samples: int, sequence_length: int) -> Tuple[Tensor, Tensor]:
-    """Construct a 50/50 balanced dataset for the has_pos_and_neg task on sums.
+class SignOfWinnerTask(Task):
+    def label(self, x: Tensor) -> Tensor:
+        x2d = x.sum(dim=-1)
+        winner_idx = torch.argmax(torch.abs(x2d), dim=1)
+        winner_vals = x2d.gather(1, winner_idx.unsqueeze(1)).squeeze(1)
+        return (winner_vals > 0).float()
 
-    Returns `(sum_seq, y)` where `sum_seq` has shape `(n_samples, T)` representing
-    the per‑timestep sum across features (to be split later), and `y`
-    is `(n_samples,)` of floats.
-    """
-    T = sequence_length
-    n_pos = n_samples // 2
-    n_neg = n_samples - n_pos
+    def generate_candidates(self, n: int, T: int, F: int) -> Tuple[Tensor, Tensor]:
+        x = randn(n, T, F)
+        y = self.label(x)
+        return x, y
 
-    # Positive class: sequences with both signs
-    mags_pos = torch.abs(randn(n_pos, T))
-    signs_pos = torch.sign(randn(n_pos, T))  # +/-1 almost surely
-    # Fix any rows that are all one sign by flipping one random position
-    all_same = signs_pos.abs().sum(dim=1) == T
-    if all_same.any():
-        idx = torch.nonzero(all_same, as_tuple=False).squeeze(1)
-        j = torch.randint(0, T, (idx.numel(),))
-        signs_pos[idx, j] *= -1
-    x_pos = mags_pos * signs_pos
 
-    # Negative class: sequences with a single sign
-    mags_neg = torch.abs(randn(n_neg, T))
-    row_signs = (torch.randint(0, 2, (n_neg,)) * 2 - 1).float().unsqueeze(1)  # +/-1 per row
-    x_neg = mags_neg * row_signs
+class HasPosAndNegTask(Task):
+    def label(self, x: Tensor) -> Tensor:
+        x2d = x.sum(dim=-1)
+        has_pos = (x2d > 0).any(dim=1)
+        has_neg = (x2d < 0).any(dim=1)
+        return (has_pos & has_neg).float()
 
-    # Stack and shuffle
-    x2d = torch.cat([x_pos, x_neg], dim=0)
-    y = torch.cat([torch.ones(n_pos), torch.zeros(n_neg)], dim=0)
-    perm = torch.randperm(n_samples)
-    return x2d[perm], y[perm]
+    def generate_candidates(self, n: int, T: int, F: int) -> Tuple[Tensor, Tensor]:
+        x = randn(n, T, F)
+        y = self.label(x)
+        return x, y
+
+
+class HasAllTokensTask(Task):
+    def label(self, x: Tensor) -> Tensor:
+        present = (x.sum(dim=1) > 0).all(dim=1)
+        return present.float()
+
+    def generate_candidates(self, n: int, T: int, V: int) -> Tuple[Tensor, Tensor]:
+        if V < 2:
+            raise ValueError("has_all_tokens requires n_features (vocab_size) >= 2")
+        if T < V:
+            raise ValueError("sequence_length must be >= n_features for 'has_all_tokens'")
+
+        tokens = torch.randint(0, V, (n, T))
+        x = torch.zeros(tokens.size(0), T, V)
+        x.scatter_(2, tokens.unsqueeze(-1).long(), 1.0)
+        y = self.label(x)
+        return x, y
+
+
+def stratified_sample_balanced(x_cand: Tensor, y_cand: Tensor, n: int) -> Tuple[Tensor, Tensor]:
+    target_pos = n // 2
+    target_neg = n - target_pos
+
+    pos_idx = torch.nonzero(y_cand > 0.5, as_tuple=False).squeeze(1)
+    neg_idx = torch.nonzero(y_cand <= 0.5, as_tuple=False).squeeze(1)
+
+    if pos_idx.numel() == 0 or neg_idx.numel() == 0:
+        raise ValueError("Candidate pool missing a class; increase n_cand or adjust seed.")
+
+    pos_sel = pos_idx[torch.randint(0, pos_idx.numel(), (target_pos,))]
+    neg_sel = neg_idx[torch.randint(0, neg_idx.numel(), (target_neg,))]
+
+    x = torch.cat([x_cand[pos_sel], x_cand[neg_sel]], dim=0)
+    y = torch.cat([torch.ones(target_pos), torch.zeros(target_neg)], dim=0)
+    perm = torch.randperm(n)
+    return x[perm], y[perm]
