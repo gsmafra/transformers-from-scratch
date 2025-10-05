@@ -45,17 +45,10 @@ def generate_run_report(run: Any, run_artifacts: Dict[str, Any], prefix: str = "
         })
 
     if weight_history:
-        # Support both 1D (single value per epoch) and 2D (one value per param per epoch)
-        first = weight_history[0]
-        if isinstance(first, (list, tuple)):
-            # Multi-parameter: one line per parameter
-            n_params = len(first)
-            ys = [[epoch_vals[j] for epoch_vals in weight_history] for j in range(n_params)]
-            keys = [f"w[{j}]" for j in range(n_params)]
-        else:
-            # Backwards-compat: single series
-            ys = [weight_history]
-            keys = ["weight"]
+        # Multi-parameter: one line per parameter (list-of-lists expected)
+        n_params = len(weight_history[0])
+        ys = [[epoch_vals[j] for epoch_vals in weight_history] for j in range(n_params)]
+        keys = [f"w[{j}]" for j in range(n_params)]
 
         run.log({
             k("metrics/weight"): wandb.plot.line_series(

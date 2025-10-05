@@ -28,8 +28,9 @@ def train_model(
     weight_history = []
     bias_history = []
 
-    # Flatten sequence dimension for downstream layers
-    x_flat = x.view(x.size(0), -1)
+    # Keep input dimensionality for models to learn from directly.
+    # Models are responsible for handling shapes; pass through as-is.
+    x_flat = x
 
     # Final linear for logging/diagnostics
     final_linear = model.final_linear()
@@ -114,15 +115,21 @@ def run_training(
     on_log: Callable[[str, int, Dict[str, float], Any, Any], None],
     *,
     hist_every: int = 10,
+    n_features: int = 2,
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
-    x, y = prepare_data(sequence_length=sequence_length, n_samples=n_samples, seed=seed)
+    x, y = prepare_data(
+        sequence_length=sequence_length,
+        n_samples=n_samples,
+        seed=seed,
+        n_features=n_features,
+    )
 
     # Build the suite of models to train this run
     models = {
-        "logreg": LogRegAccess(sequence_length=sequence_length),
-        "temporal": TemporalAccess(sequence_length=sequence_length),
-        "attention": AttentionAccess(),
+        "logreg": LogRegAccess(sequence_length=sequence_length, n_features=n_features),
+        "temporal": TemporalAccess(sequence_length=sequence_length, n_features=n_features),
+        "attention": AttentionAccess(n_features=n_features),
     }
 
     results: Dict[str, Dict[str, Any]] = {}

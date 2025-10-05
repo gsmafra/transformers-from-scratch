@@ -35,15 +35,20 @@ def prepare_data(
     seed: int = 0,
     *,
     task: Optional[str] = None,
+    n_features: int = 2,
 ) -> Tuple[Tensor, Tensor]:
     """Generate sequences and labels for a selected dummy task.
 
+    This variant uses `n_features` features per timestep. Task labelers operate
+    on the per‑timestep sum across features.
+
     Tasks:
-      - sign_of_winner: y=1 if argmax |x_t| is positive else 0
-      - has_pos_and_neg: y=1 if at least one positive and one negative exist
+      - sign_of_winner: y=1 if argmax |sum_t| is positive else 0
+      - has_pos_and_neg: y=1 if the summed sequence contains at least one
+        positive and one negative value
 
     Returns:
-      x: (n_samples, sequence_length, 1) from N(0, 1)
+      x: (n_samples, sequence_length, n_features)
       y: (n_samples,)
     """
     manual_seed(seed)
@@ -54,22 +59,30 @@ def prepare_data(
 
     # Special balanced generation for has_pos_and_neg
     if task_name == "has_pos_and_neg":
-        x2d, y = _generate_balanced_has_pos_and_neg(n_samples, sequence_length)
-        return x2d.unsqueeze(-1), y
+        # First build a balanced summed sequence, then split it into features
+        sum_seq, y = _generate_balanced_has_pos_and_neg(n_samples, sequence_length)
+        if n_features < 1:
+            raise ValueError("n_features must be >= 1")
+        # Create n_features-1 random components (shape may have last dim 0)
+        comps = randn(n_samples, sequence_length, max(n_features - 1, 0))
+        partial_sum = comps.sum(dim=-1)  # (n, T); zeros if last dim is 0
+        last = sum_seq - partial_sum  # (n, T)
+        x3d = torch.cat([comps, last.unsqueeze(-1)], dim=-1)  # (n, T, n_features)
+        return x3d, y
 
-    # Default: iid Gaussian sequences + task labeler
-    x = randn(n_samples, sequence_length, 1)
-    x2d = x.squeeze(-1)  # (n, T)
-    y = TASKS[task_name](x2d)
+    # Default: iid Gaussian sequences with n_features + task labeler on the sum
+    x = randn(n_samples, sequence_length, n_features)
+    sum_seq = x.sum(dim=-1)  # (n, T)
+    y = TASKS[task_name](sum_seq)
     return x, y
 
 
 def _generate_balanced_has_pos_and_neg(n_samples: int, sequence_length: int) -> Tuple[Tensor, Tensor]:
-    """Construct a 50/50 balanced dataset for the has_pos_and_neg task.
+    """Construct a 50/50 balanced dataset for the has_pos_and_neg task on sums.
 
-    Half the samples contain at least one positive and one negative; half are
-    single-sign (all positive or all negative). Returns `(x2d, y)` where
-    `x2d` has shape `(n_samples, T)` and `y` is `(n_samples,)` of floats.
+    Returns `(sum_seq, y)` where `sum_seq` has shape `(n_samples, T)` representing
+    the per‑timestep sum across features (to be split later), and `y`
+    is `(n_samples,)` of floats.
     """
     T = sequence_length
     n_pos = n_samples // 2

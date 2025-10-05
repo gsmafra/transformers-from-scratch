@@ -6,11 +6,11 @@
 
 **How It Works**
 
-- Data: generated in `data.py` and imported in `training.py`. Multiple dummy tasks are available under `TASKS` with a configurable default via `DEFAULT_TASK`:
-  - `sign_of_winner`: `y=1` if the argmax of `|x_t|` is positive.
-  - `has_pos_and_neg` (default): `y=1` if the sequence contains at least one positive and one negative value.
+- Data: generated in `data.py` and imported in `training.py`. Inputs have `F` features per timestep `(N, T, F)`. Task labels are computed on the per‑timestep sum over features:
+  - `sign_of_winner`: `y=1` if the argmax of `|sum_t|` is positive.
+  - `has_pos_and_neg` (default): `y=1` if the summed sequence contains at least one positive and one negative value.
 - Models (train each run):
-  - `logreg`: logistic regression over the flattened sequence (linear baseline).
+  - `logreg`: logistic regression over the flattened sequence of `F` features (linear baseline).
   - `temporal`: per‑timestep projection, mean over features to `(N, T)`, then a classifier over timesteps.
   - `attention`: learned attention pooling over timesteps producing a `(N, 1)` probability.
 - Training loop: shared for both models; logs per‑epoch metrics and periodic distributions via a unified callback.
@@ -46,7 +46,7 @@
 - Per‑epoch scalars per model: `metrics/loss`, `metrics/accuracy`, `metrics/grad_norm`, `metrics/weight_norm`.
 - Distributions every `hist_every` epochs: probabilities and logits histograms.
 - End‑of‑run eval per model: ROC curve, PR curve, confusion matrix.
-- W&B steps: model‑specific step metrics (`logreg/step`, `temporal/step`) avoid global step collisions.
+- W&B steps: model‑specific step metrics (`logreg/step`, `temporal/step`, `attention/step`) avoid global step collisions.
 
 **Progression Plan (Curriculum)**
 
