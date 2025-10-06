@@ -125,7 +125,7 @@ class TemporalAccess(ModelAccess):
 
 
 class AttentionAccess(ModelAccess):
-    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.5, d_model: int = 16) -> None:
+    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.3, d_model: int = 16) -> None:
         super().__init__(
             name="attention",
             backbone=AttentionPoolingClassifier(n_features=n_features, d_model=d_model),
@@ -138,7 +138,7 @@ class AttentionAccess(ModelAccess):
 
 
 class SelfAttentionAccess(ModelAccess):
-    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.5, d_model: int = 16) -> None:
+    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.3, d_model: int = 16) -> None:
         super().__init__(
             name="self_attention",
             backbone=SimpleSelfAttentionClassifier(n_features=n_features, d_model=d_model),
