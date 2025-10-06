@@ -33,8 +33,9 @@ class SimpleTemporalPoolingClassifier(Module):
 
 
 class AttentionPoolingClassifier(Module):
-    def __init__(self, n_features: int = 2, d_model: int = 16) -> None:
+    def __init__(self, n_features: int = 2, d_model: int = 16, softmax_temperature: float = 2) -> None:
         super().__init__()
+        self.softmax_temperature = softmax_temperature
         self.proj = Linear(n_features, d_model)
         self.scorer = Linear(d_model, 1)
         self.classifier = make_tanh_classifier_head(d_model)
@@ -42,7 +43,7 @@ class AttentionPoolingClassifier(Module):
     def forward(self, x_in: Tensor) -> Tensor:
         # x_in: (N, T, F)
         hidden = tanh(self.proj(x_in))  # (N, T, d)
-        scores = self.scorer(hidden).squeeze(-1)  # (N, T)
+        scores = self.scorer(hidden).squeeze(-1) / self.softmax_temperature  # (N, T)
         attn = softmax(scores, dim=1)  # (N, T)
         pooled = (attn.unsqueeze(-1) * hidden).sum(dim=1)  # (N, d)
         return self.classifier(pooled)  # (N, 1)
@@ -137,7 +138,7 @@ class AttentionAccess(ModelAccess):
 
 
 class SelfAttentionAccess(ModelAccess):
-    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.2, d_model: int = 16) -> None:
+    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.5, d_model: int = 16) -> None:
         super().__init__(
             name="self_attention",
             backbone=SimpleSelfAttentionClassifier(n_features=n_features, d_model=d_model),
