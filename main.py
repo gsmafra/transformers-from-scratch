@@ -17,15 +17,15 @@ def main():
     # Use model-specific step metrics to avoid global step collisions
     # Explicitly bind only metrics and distributions under each namespace
     wandb.define_metric("logreg/step")
-    wandb.define_metric("temporal/step")
+    wandb.define_metric("self_attention/step")
     wandb.define_metric("attention/step")
 
     wandb.define_metric("logreg/metrics/*", step_metric="logreg/step")
-    wandb.define_metric("temporal/metrics/*", step_metric="temporal/step")
+    wandb.define_metric("self_attention/metrics/*", step_metric="self_attention/step")
     wandb.define_metric("attention/metrics/*", step_metric="attention/step")
 
     wandb.define_metric("logreg/distributions/*", step_metric="logreg/step")
-    wandb.define_metric("temporal/distributions/*", step_metric="temporal/step")
+    wandb.define_metric("self_attention/distributions/*", step_metric="self_attention/step")
     wandb.define_metric("attention/distributions/*", step_metric="attention/step")
 
     # Unified logger: metrics + optional distributions, per model prefix
@@ -56,8 +56,8 @@ def main():
     if isinstance(run_artifacts, dict):
         if "logreg" in run_artifacts:
             generate_run_report(run, run_artifacts["logreg"], prefix="logreg")
-        if "temporal" in run_artifacts:
-            generate_run_report(run, run_artifacts["temporal"], prefix="temporal")
+        if "self_attention" in run_artifacts:
+            generate_run_report(run, run_artifacts["self_attention"], prefix="self_attention")
         if "attention" in run_artifacts:
             generate_run_report(run, run_artifacts["attention"], prefix="attention")
     else:

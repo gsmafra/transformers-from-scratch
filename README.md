@@ -11,7 +11,7 @@
   - `has_pos_and_neg` (default): `y=1` if the summed sequence contains at least one positive and one negative value.
 - Models (train each run):
   - `logreg`: logistic regression over the flattened sequence of `F` features (linear baseline).
-  - `temporal`: per‑timestep projection, mean over features to `(N, T)`, then a classifier over timesteps.
+  - `self_attention`: simple self‑attention over timesteps with learned projection and row‑wise softmax over keys.
   - `attention`: learned attention pooling over timesteps producing a `(N, 1)` probability.
 - Training loop: shared for both models; logs per‑epoch metrics and periodic distributions via a unified callback.
 - Reporting: end‑of‑run evaluation panels (ROC/PR/confusion) are created for both models with separate prefixes.
@@ -20,7 +20,7 @@
 
 - `main.py`
   - Orchestrates a run, sets W&B settings, defines per‑model step metrics, and supplies a unified logger callback.
-  - Calls `run_training(...)` and then `generate_run_report(...)` for each model under `logreg/` and `temporal/` prefixes.
+  - Calls `run_training(...)` and then `generate_run_report(...)` for each model under `logreg/`, `self_attention/`, and `attention/` prefixes.
 - `models.py`
   - Model definitions: `SimpleTemporalPoolingClassifier`, `AttentionPoolingClassifier`.
   - Builders: `build_logreg(sequence_length)`, `build_model(sequence_length)`.
@@ -28,7 +28,7 @@
 - `training.py`
   - Imports `prepare_data(...)` and the access wrappers from `models.py`.
   - `train_model(model: ModelAccess, x, y, on_log, hist_every)`: shared loop; epochs and learning rate come from the `model`.
-  - `run_training(...)`: prepares data once, trains three models, returns artifacts as `{"logreg": ..., "temporal": ..., "attention": ...}`.
+  - `run_training(...)`: prepares data once, trains three models, returns artifacts as `{"logreg": ..., "self_attention": ..., "attention": ...}`.
 - `report.py`
   - `generate_run_report(run, artifacts, prefix="")`: logs W&B panels (metrics histories, ROC/PR/confusion) under the provided prefix.
 - `pyproject.toml`: dependencies (torch, wandb, numpy).
@@ -38,7 +38,7 @@
 - Prereqs: Python 3.8+, Torch, W&B account or offline mode.
 - Auth: the code does not contain credentials; run `wandb login` once or set `WANDB_API_KEY`.
 - Start training: `python main.py`
-  - W&B charts appear under `logreg/*`, `temporal/*`, and `attention/*` namespaces.
+  - W&B charts appear under `logreg/*`, `self_attention/*`, and `attention/*` namespaces.
 - Offline: `WANDB_MODE=offline python main.py` (logs saved locally and can be synced later).
 
 **What Gets Logged**
@@ -46,7 +46,7 @@
 - Per‑epoch scalars per model: `metrics/loss`, `metrics/accuracy`, `metrics/grad_norm`, `metrics/weight_norm`.
 - Distributions every `hist_every` epochs: probabilities and logits histograms.
 - End‑of‑run eval per model: ROC curve, PR curve, confusion matrix.
-- W&B steps: model‑specific step metrics (`logreg/step`, `temporal/step`, `attention/step`) avoid global step collisions.
+- W&B steps: model‑specific step metrics (`logreg/step`, `self_attention/step`, `attention/step`) avoid global step collisions.
 
 **Progression Plan (Curriculum)**
 
