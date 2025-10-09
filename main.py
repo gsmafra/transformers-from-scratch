@@ -12,24 +12,20 @@ N_SAMPLES = 1000
 
 
 def main():
+    task = DEFAULT_TASK
+    project_name = f"transformer-scratchpad-{task}"
+
     run = wandb.init(
-        project="transformer-scratchpad",
+        project=project_name,
         settings=wandb.Settings(_disable_stats=True),  # disable W&B system metrics
     )
 
-    # Use model-specific step metrics to avoid global step collisions
-    # Explicitly bind only metrics and distributions under each namespace
-    wandb.define_metric("logreg/step")
-    wandb.define_metric("self_attention/step")
-    wandb.define_metric("attention/step")
-
-    wandb.define_metric("logreg/metrics/*", step_metric="logreg/step")
-    wandb.define_metric("self_attention/metrics/*", step_metric="self_attention/step")
-    wandb.define_metric("attention/metrics/*", step_metric="attention/step")
-
-    wandb.define_metric("logreg/distributions/*", step_metric="logreg/step")
-    wandb.define_metric("self_attention/distributions/*", step_metric="self_attention/step")
-    wandb.define_metric("attention/distributions/*", step_metric="attention/step")
+    # Configure per-model metrics with minimal duplication
+    model_names = ["logreg", "temporal", "self_attention", "attention"]
+    for name in model_names:
+        wandb.define_metric(f"{name}/step")
+        wandb.define_metric(f"{name}/metrics/*", step_metric=f"{name}/step")
+        wandb.define_metric(f"{name}/distributions/*", step_metric=f"{name}/step")
 
     # Unified logger: metrics + optional distributions, per model prefix
     def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
@@ -53,22 +49,19 @@ def main():
         seed=0,
         on_log=log_all,
         hist_every=10,
+        task=task,
     )
 
-    # Generate eval/report panels for both models under separate prefixes
+    # Generate eval/report panels under each model prefix
     if isinstance(run_artifacts, dict):
-        if "logreg" in run_artifacts:
-            generate_run_report(run, run_artifacts["logreg"], prefix="logreg")
-        if "self_attention" in run_artifacts:
-            generate_run_report(run, run_artifacts["self_attention"], prefix="self_attention")
-        if "attention" in run_artifacts:
-            generate_run_report(run, run_artifacts["attention"], prefix="attention")
+        for name, artifacts in run_artifacts.items():
+            generate_run_report(run, artifacts, prefix=name)
     else:
         generate_run_report(run, run_artifacts)
 
     # Persist benchmarking to CSV for cross-run comparison
     if isinstance(run_artifacts, dict):
-        update_benchmark_csv(task=DEFAULT_TASK, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
+        update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
 
     run.finish()
 

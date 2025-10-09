@@ -5,3 +5,4 @@ Commit rules:
 - Commit prefixes like `refactor` must be lowercase at all times.
 - Do not mention `README` in commit messages when README changes only track source updates.
 - Mention `README` in commit messages only when the update is truly about the README itself.
+- Only commit/push when explicitly instructed to do so by the user.

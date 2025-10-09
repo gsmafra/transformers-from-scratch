@@ -6,7 +6,7 @@ from torch.nn.utils import clip_grad_norm_
 from torch.optim import SGD
 
 from data import prepare_data
-from models import ModelAccess, LogRegAccess, AttentionAccess, SelfAttentionAccess
+from models import ModelAccess, LogRegAccess, AttentionAccess, SelfAttentionAccess, TemporalAccess
 
 
 def train_model(
@@ -21,7 +21,7 @@ def train_model(
 
     backbone = model.backbone
     criterion = BCELoss()
-    optimizer = SGD(backbone.parameters(), lr=model.lr)
+    optimizer = SGD(backbone.parameters(), lr=model.lr, momentum=getattr(model, "momentum", 0.9))
 
     loss_history = []
     # Each entry will be a list[float] for all parameters at that epoch
@@ -130,6 +130,7 @@ def run_training(
     # Build the suite of models to train this run
     models = {
         "logreg": LogRegAccess(sequence_length=sequence_length, n_features=n_features),
+        "temporal": TemporalAccess(sequence_length=sequence_length, n_features=n_features),
         "self_attention": SelfAttentionAccess(n_features=n_features),
         "attention": AttentionAccess(n_features=n_features),
     }

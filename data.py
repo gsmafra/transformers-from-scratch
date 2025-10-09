@@ -6,7 +6,7 @@ from torch import Tensor, manual_seed, randn
 
 
 # Set which task the code points to by default
-DEFAULT_TASK = "has_pos_and_neg"
+DEFAULT_TASK = "sign_of_winner"
 
 
 def prepare_data(
@@ -34,6 +34,7 @@ def prepare_data(
         "sign_of_second_place": SignOfSecondPlaceTask(),
         "has_pos_and_neg": HasPosAndNegTask(),
         "has_all_tokens": HasAllTokensTask(),
+        "any_abs_gt_one": AnyAbsGreaterThanOneTask(),
     }
 
     if task_name not in TASK_REGISTRY:
@@ -127,6 +128,17 @@ class HasAllTokensTask(Task):
         tokens = torch.randint(0, V, (n, T))
         x = torch.zeros(tokens.size(0), T, V)
         x.scatter_(2, tokens.unsqueeze(-1).long(), 1.0)
+        y = self.label(x)
+        return x, y
+
+
+class AnyAbsGreaterThanOneTask(Task):
+    def label(self, x: Tensor) -> Tensor:
+        # Positive if any raw element exceeds unit magnitude
+        return (x.abs() > 1.0).any(dim=(1, 2)).float()
+
+    def generate_candidates(self, n: int, T: int, F: int) -> Tuple[Tensor, Tensor]:
+        x = randn(n, T, F)
         y = self.label(x)
         return x, y
 

@@ -22,12 +22,14 @@ class ModelAccess(ABC):
     backbone: Module
     epochs: int
     lr: float
+    momentum: float
 
-    def __init__(self, name: str, backbone: Module, *, epochs: int, lr: float) -> None:
+    def __init__(self, name: str, backbone: Module, *, epochs: int, lr: float, momentum: float = 0.9) -> None:
         self.name = name
         self.backbone = backbone
         self.epochs = epochs
         self.lr = lr
+        self.momentum = momentum
 
     def forward(self, x):  # passthrough to module
         return self.backbone(x)
@@ -35,4 +37,3 @@ class ModelAccess(ABC):
     @abstractmethod
     def final_linear(self) -> Linear:
         raise NotImplementedError
-
