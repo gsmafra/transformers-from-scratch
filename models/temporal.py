@@ -1,3 +1,4 @@
+from typing import Optional
 from torch import Tensor, tanh
 from torch.nn import Linear, Module, Sequential, Sigmoid
 
@@ -21,14 +22,22 @@ def build_model(sequence_length: int, n_features: int) -> Module:
 
 
 class TemporalAccess(ModelAccess):
-    def __init__(self, sequence_length: int, n_features: int = 2, *, epochs: int = 1000, lr: float = 1.0) -> None:
+    def __init__(
+        self,
+        sequence_length: int,
+        n_features: int = 2,
+        *,
+        epochs: int = 1000,
+        lr_start: Optional[float] = 1.0,
+        lr_end: Optional[float] = None,
+    ) -> None:
         super().__init__(
             name="temporal",
             backbone=build_model(sequence_length, n_features),
             epochs=epochs,
-            lr=lr,
+            lr_start=lr_start,
+            lr_end=lr_end,
         )
 
     def final_linear(self) -> Linear:  # type: ignore[override]
         return self.backbone.classifier[0]  # type: ignore[attr-defined,index]
-

@@ -3,7 +3,8 @@ from typing import Any, Callable, Dict, Optional
 from torch import logit, no_grad, Tensor
 from torch.nn import BCELoss
 from torch.nn.utils import clip_grad_norm_
-from torch.optim import SGD
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import LambdaLR
 
 from tasks import prepare_data
 from models import ModelAccess, LogRegAccess, AttentionAccess, SelfAttentionAccess, TemporalAccess
@@ -21,7 +22,18 @@ def train_model(
 
     backbone = model.backbone
     criterion = BCELoss()
-    optimizer = SGD(backbone.parameters(), lr=model.lr, momentum=getattr(model, "momentum", 0.9))
+    optimizer = AdamW(
+        backbone.parameters(),
+        lr=model.lr_start,
+        weight_decay=getattr(model, "weight_decay", 0.01),
+        betas=getattr(model, "betas", (0.9, 0.999)),
+        eps=getattr(model, "eps", 1e-8),
+    )
+
+    # Linear schedule from lr_start to lr_end across epochs using LambdaLR (multiplicative factors)
+    denom = max(model.epochs - 1, 1)
+    ratio = float(model.lr_end) / float(model.lr_start + 1e-12)
+    scheduler = LambdaLR(optimizer, lr_lambda=lambda ep: 1.0 + (ratio - 1.0) * (ep / denom))
 
     loss_history = []
     # Each entry will be a list[float] for all parameters at that epoch
@@ -84,6 +96,9 @@ def train_model(
             probs_np,
             logits_np,
         )
+
+        # Advance LR schedule for next epoch
+        scheduler.step()
 
     with no_grad():
         final_probabilities = model.forward(x_flat).squeeze(-1)

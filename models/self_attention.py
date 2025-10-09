@@ -1,3 +1,4 @@
+from typing import Optional
 import torch
 from torch import Tensor
 from torch.nn import Linear, Module, Sequential, Sigmoid
@@ -23,15 +24,23 @@ class SimpleSelfAttentionClassifier(Module):
 
 
 class SelfAttentionAccess(ModelAccess):
-    def __init__(self, n_features: int = 2, *, epochs: int = 1000, lr: float = 0.2, d_model: int = 16) -> None:
+    def __init__(
+        self,
+        n_features: int = 2,
+        *,
+        epochs: int = 1000,
+        d_model: int = 16,
+        lr_start: Optional[float] = 0.4,
+        lr_end: Optional[float] = 0.2,
+    ) -> None:
         super().__init__(
             name="self_attention",
             backbone=SimpleSelfAttentionClassifier(n_features=n_features, d_model=d_model),
             epochs=epochs,
-            lr=lr,
+            lr_start=lr_start,
+            lr_end=lr_end,
         )
 
     def final_linear(self) -> Linear:  # type: ignore[override]
         # final linear lives inside the head at index 0->Sequential, index 2 of that
         return self.backbone.classifier[0][2]  # type: ignore[attr-defined,index]
-

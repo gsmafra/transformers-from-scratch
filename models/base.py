@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from torch.nn import Linear, Module, Sequential, Tanh
 
@@ -21,15 +22,26 @@ class ModelAccess(ABC):
     name: str
     backbone: Module
     epochs: int
-    lr: float
     momentum: float
+    lr_start: Optional[float]
+    lr_end: Optional[float]
 
-    def __init__(self, name: str, backbone: Module, *, epochs: int, lr: float, momentum: float = 0.9) -> None:
+    def __init__(
+        self,
+        name: str,
+        backbone: Module,
+        *,
+        epochs: int,
+        momentum: float = 0.9,
+        lr_start: float = 0.1,
+        lr_end: float = 0.1,
+    ) -> None:
         self.name = name
         self.backbone = backbone
         self.epochs = epochs
-        self.lr = lr
         self.momentum = momentum
+        self.lr_start = lr_start
+        self.lr_end = lr_end
 
     def forward(self, x):  # passthrough to module
         return self.backbone(x)
