@@ -6,7 +6,7 @@
 
 **How It Works**
 
-- Data: generated in `data.py` and imported in `training.py`. Inputs have `F` features per timestep `(N, T, F)`. Tasks include:
+- Data: generated in `tasks/generation.py` and imported in `training.py`. Inputs have `F` features per timestep `(N, T, F)`. Tasks include:
   - `sign_of_winner`: `y=1` if the argmax of `|sum_t|` is positive.
   - `sign_of_second_place`: `y=1` if the 2nd largest `|sum_t|` is positive.
   - `has_pos_and_neg` (default): `y=1` if the summed sequence contains at least one positive and one negative value.

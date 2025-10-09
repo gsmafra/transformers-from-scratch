@@ -5,7 +5,7 @@ from torch.nn import BCELoss
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import SGD
 
-from data import prepare_data
+from tasks import prepare_data
 from models import ModelAccess, LogRegAccess, AttentionAccess, SelfAttentionAccess, TemporalAccess
 
 

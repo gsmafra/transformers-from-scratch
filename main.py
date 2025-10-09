@@ -1,5 +1,5 @@
 import wandb
-from data import DEFAULT_TASK
+from tasks import DEFAULT_TASK
 from benchmarking_csv import update_benchmark_csv
 from benchmarking_html import generate_benchmark_html
 

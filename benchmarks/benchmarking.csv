@@ -1,7 +1,7 @@
 model,task,accuracy,loss
 logreg,sign_of_second_place,0.666000,0.556760
-self_attention,sign_of_second_place,0.735000,0.518345
-attention,sign_of_second_place,0.720000,0.516935
+self_attention,sign_of_second_place,0.861000,0.305917
+attention,sign_of_second_place,0.913000,0.188737
 logreg,sign_of_winner,0.848000,0.322855
 self_attention,sign_of_winner,0.968000,0.089798
 attention,sign_of_winner,0.989000,0.036117
@@ -9,12 +9,12 @@ logreg,has_all_tokens,0.520000,0.691926
 self_attention,has_all_tokens,1.000000,0.016449
 attention,has_all_tokens,1.000000,0.006074
 logreg,has_pos_and_neg,0.561000,0.686709
-self_attention,has_pos_and_neg,0.952000,0.144737
-attention,has_pos_and_neg,0.972000,0.084350
+self_attention,has_pos_and_neg,0.995000,0.014036
+attention,has_pos_and_neg,1.000000,0.004046
 temporal,has_all_tokens,0.506000,0.691935
-temporal,has_pos_and_neg,0.557000,0.685889
+temporal,has_pos_and_neg,0.610000,0.659291
 temporal,sign_of_winner,0.947000,0.160049
-temporal,sign_of_second_place,0.715000,0.523306
+temporal,sign_of_second_place,0.722000,0.502592
 logreg,any_abs_gt_one,0.562000,0.686015
 temporal,any_abs_gt_one,0.984000,0.065456
 self_attention,any_abs_gt_one,0.992000,0.030073
