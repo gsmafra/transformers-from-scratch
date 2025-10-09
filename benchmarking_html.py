@@ -42,7 +42,7 @@ def generate_benchmark_html(
         autoescape=select_autoescape(["html", "xml"]),
         enable_async=False,
     )
-    template = env.get_template("benchmarks.html.j2")
+    template = env.get_template("benchmarks.html")
     output = template.render(title=title, models=models, tasks=tasks, values=values)
 
     with open(html_path, "w", encoding="utf-8") as f:

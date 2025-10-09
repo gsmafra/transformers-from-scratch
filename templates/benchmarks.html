@@ -4,12 +4,25 @@
   <meta charset="utf-8">
   <title>{{ title }}</title>
   <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; margin: 24px; }
-  h1 { font-size: 20px; margin: 0 0 12px; text-align: center; }
-  table { border-collapse: collapse; width: 90%; margin: 0 auto; }
-  th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: center; }
-  th { cursor: pointer; user-select: none; position: sticky; top: 0; background: #fafafa; }
-  tr:hover td { background: #f7f7f7; }
+  :root {
+    --bg: #0f1117;
+    --panel: #111827;
+    --panel-2: #1f2937;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #2b3240;
+    --hover: #1b2230;
+    --accent: #2563eb;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; margin: 24px; }
+  h1 { font-size: 20px; margin: 0 0 12px; text-align: center; color: var(--text); }
+  #controls { color: var(--muted); text-align: center; }
+  #controls button { margin: 0 6px; padding: 6px 10px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+  #controls button:hover { background: var(--hover); }
+  table { border-collapse: collapse; width: 90%; margin: 0 auto; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: center; }
+  th { cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel-2); color: var(--text); }
+  tr:hover td { background: var(--hover); }
   .num { text-align: center; font-variant-numeric: tabular-nums; }
   .arrow { float: right; opacity: 0.6; }
   </style>
@@ -82,4 +95,3 @@
   </table>
 </body>
 </html>
-
