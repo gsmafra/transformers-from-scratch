@@ -6,9 +6,11 @@
 
 **How It Works**
 
-- Data: generated in `data.py` and imported in `training.py`. Inputs have `F` features per timestep `(N, T, F)`. Task labels are computed on the per‑timestep sum over features:
+- Data: generated in `data.py` and imported in `training.py`. Inputs have `F` features per timestep `(N, T, F)`. Tasks include:
   - `sign_of_winner`: `y=1` if the argmax of `|sum_t|` is positive.
+  - `sign_of_second_place`: `y=1` if the 2nd largest `|sum_t|` is positive.
   - `has_pos_and_neg` (default): `y=1` if the summed sequence contains at least one positive and one negative value.
+  - `has_all_tokens`: categorical dummy inputs; `y=1` if every token appears at least once in the sequence.
 - Models (train each run):
   - `logreg`: logistic regression over the flattened sequence of `F` features (linear baseline).
   - `self_attention`: simple self‑attention over timesteps with learned projection and row‑wise softmax over keys.
@@ -21,12 +23,14 @@
 - `main.py`
   - Orchestrates a run, sets W&B settings, defines per‑model step metrics, and supplies a unified logger callback.
   - Calls `run_training(...)` and then `generate_run_report(...)` for each model under `logreg/`, `self_attention/`, and `attention/` prefixes.
-- `models.py`
-  - Model definitions: `SimpleTemporalPoolingClassifier`, `AttentionPoolingClassifier`.
-  - Builders: `build_logreg(sequence_length)`, `build_model(sequence_length)`.
-  - Access wrappers: `LogRegAccess`, `TemporalAccess`, `AttentionAccess` unify the training interface and expose the final Linear for diagnostics.
+- `models/` (package)
+  - `base.py`: `ModelAccess` ABC and `make_tanh_classifier_head` helper.
+  - `logreg.py`: linear baseline and `LogRegAccess`.
+  - `attention.py`: attention pooling model and `AttentionAccess`.
+  - `self_attention.py`: simple self‑attention and `SelfAttentionAccess`.
+  - `temporal.py`: legacy temporal pooling (`SimpleTemporalPoolingClassifier`, `TemporalAccess`).
 - `training.py`
-  - Imports `prepare_data(...)` and the access wrappers from `models.py`.
+  - Imports `prepare_data(...)` and the access wrappers from `models/`.
   - `train_model(model: ModelAccess, x, y, on_log, hist_every)`: shared loop; epochs and learning rate come from the `model`.
   - `run_training(...)`: prepares data once, trains three models, returns artifacts as `{"logreg": ..., "self_attention": ..., "attention": ...}`.
 - `report.py`
@@ -67,7 +71,7 @@
 - Add tasks: tweak `prepare_data` to generate new targets; keep difficulty incremental.
 - Tuning:
   - Adjust `SEQUENCE_LENGTH`, `N_SAMPLES`, and `hist_every` in `main.py`.
-  - Adjust `epochs` and `lr` in the access wrappers in `models.py` (or extend the code to pass them from `main.py`).
+  - Adjust `epochs` and `lr` in the access wrappers in `models/` (or extend the code to pass them from `main.py`).
 
 **Notes**
 
