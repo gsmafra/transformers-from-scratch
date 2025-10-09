@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+  body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; margin: 24px; }
+  h1 { font-size: 20px; margin: 0 0 12px; text-align: center; }
+  table { border-collapse: collapse; width: 90%; margin: 0 auto; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: center; }
+  th { cursor: pointer; user-select: none; position: sticky; top: 0; background: #fafafa; }
+  tr:hover td { background: #f7f7f7; }
+  .num { text-align: center; font-variant-numeric: tabular-nums; }
+  .arrow { float: right; opacity: 0.6; }
+  </style>
+  <script>
+  function parseNum(v) { var x = parseFloat(v); return isNaN(x) ? null : x; }
+  function applyMetric(metric) {
+    var table = document.getElementById('bench');
+    var cells = table.querySelectorAll('tbody td[data-acc]');
+    cells.forEach(function(td) {
+      var raw = td.getAttribute(metric === 'loss' ? 'data-loss' : 'data-acc') || '';
+      if (metric === 'loss') {
+        td.textContent = raw;
+      } else {
+        var x = parseFloat(raw);
+        td.textContent = isNaN(x) ? '' : (x * 100).toFixed(1) + '%';
+      }
+    });
+  }
+  function sortTable(th) {
+    var table = document.getElementById('bench');
+    var tbody = table.tBodies[0];
+    var rows = Array.prototype.slice.call(tbody.rows);
+    var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
+    var asc = th.getAttribute('data-asc') !== 'true';
+    for (var i=0;i<th.parentNode.children.length;i++) th.parentNode.children[i].removeAttribute('data-asc');
+    th.setAttribute('data-asc', asc);
+    rows.sort(function(a,b) {
+      var A = a.cells[idx].textContent.trim();
+      var B = b.cells[idx].textContent.trim();
+      var An = parseNum(A), Bn = parseNum(B);
+      if (An !== null && Bn !== null) return asc ? (An - Bn) : (Bn - An);
+      return asc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  }
+  window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('metric-accuracy').addEventListener('click', function() { applyMetric('accuracy'); });
+    document.getElementById('metric-loss').addEventListener('click', function() { applyMetric('loss'); });
+    applyMetric('accuracy');
+  });
+  </script>
+  </head>
+<body>
+  <h1>{{ title }}</h1>
+  <div id="controls" style="margin: 8px 0 16px;">
+    <label style="margin-right:8px;">Metric:</label>
+    <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
+    <button id="metric-loss" data-metric="loss">Loss</button>
+  </div>
+  <table id="bench">
+    <thead>
+      <tr>
+        <th data-key="model" onclick="sortTable(this)">Model</th>
+        {% for t in tasks %}
+          <th data-key="{{ t }}" onclick="sortTable(this)">{{ t }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in models %}
+      <tr>
+        <td data-key="model">{{ m }}</td>
+        {% for t in tasks %}
+          {% set cell = values.get(m, {}).get(t) %}
+          <td data-key="{{ t }}" data-acc="{{ cell.accuracy if cell else '' }}" data-loss="{{ cell.loss if cell else '' }}" class="num">{{ cell.accuracy if cell else '' }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
+
