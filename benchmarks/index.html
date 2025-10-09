@@ -1,38 +1,32 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Model × Task Benchmarks</title>
-<style>
-body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; margin: 24px; }
-h1 { font-size: 20px; margin: 0 0 12px; text-align: center; }
-table { border-collapse: collapse; width: 90%; margin: 0 auto; }
-th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: center; }
-th { cursor: pointer; user-select: none; position: sticky; top: 0; background: #fafafa; }
-tr:hover td { background: #f7f7f7; }
-.num { text-align: center; font-variant-numeric: tabular-nums; }
-.arrow { float: right; opacity: 0.6; }
-</style>
-</head>
-<body>
-<h1>Model × Task Benchmarks</h1>
-<div id="controls" style="margin: 8px 0 16px;">
-  <label style="margin-right:8px;">Metric:</label>
-  <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
-  <button id="metric-loss" data-metric="loss">Loss</button>
-</div>
-<table id="bench">
-<thead>
-  <tr><th data-key="model" onclick="sortTable(this)">Model</th><th data-key="has_all_tokens" onclick="sortTable(this)">has_all_tokens</th><th data-key="has_pos_and_neg" onclick="sortTable(this)">has_pos_and_neg</th><th data-key="sign_of_second_place" onclick="sortTable(this)">sign_of_second_place</th><th data-key="sign_of_winner" onclick="sortTable(this)">sign_of_winner</th></tr>
-</thead>
-<tbody>
-  <tr><td data-key="model">attention</td><td data-key="has_all_tokens" data-acc="1.000000" data-loss="0.006342" class="num">1.000000</td><td data-key="has_pos_and_neg" data-acc="0.973000" data-loss="0.082119" class="num">0.973000</td><td data-key="sign_of_second_place" data-acc="0.723000" data-loss="0.518920" class="num">0.723000</td><td data-key="sign_of_winner" data-acc="0.909000" data-loss="0.195066" class="num">0.909000</td></tr>
-  <tr><td data-key="model">logreg</td><td data-key="has_all_tokens" data-acc="0.520000" data-loss="0.691926" class="num">0.520000</td><td data-key="has_pos_and_neg" data-acc="0.561000" data-loss="0.686709" class="num">0.561000</td><td data-key="sign_of_second_place" data-acc="0.666000" data-loss="0.556760" class="num">0.666000</td><td data-key="sign_of_winner" data-acc="0.848000" data-loss="0.322855" class="num">0.848000</td></tr>
-  <tr><td data-key="model">self_attention</td><td data-key="has_all_tokens" data-acc="1.000000" data-loss="0.017895" class="num">1.000000</td><td data-key="has_pos_and_neg" data-acc="0.947000" data-loss="0.138219" class="num">0.947000</td><td data-key="sign_of_second_place" data-acc="0.713000" data-loss="0.524199" class="num">0.713000</td><td data-key="sign_of_winner" data-acc="0.851000" data-loss="0.315581" class="num">0.851000</td></tr>
-</tbody>
-</table>
-<script>
-(function() {
+  <meta charset="utf-8">
+  <title>Model × Task Benchmarks</title>
+  <style>
+  :root {
+    --bg: #0f1117;
+    --panel: #111827;
+    --panel-2: #1f2937;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #2b3240;
+    --hover: #1b2230;
+    --accent: #2563eb;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; margin: 24px; }
+  h1 { font-size: 20px; margin: 0 0 12px; text-align: center; color: var(--text); }
+  #controls { color: var(--muted); text-align: center; }
+  #controls button { margin: 0 6px; padding: 6px 10px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+  #controls button:hover { background: var(--hover); }
+  table { border-collapse: collapse; width: 90%; margin: 0 auto; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: center; }
+  th { cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel-2); color: var(--text); }
+  tr:hover td { background: var(--hover); }
+  .num { text-align: center; font-variant-numeric: tabular-nums; }
+  .arrow { float: right; opacity: 0.6; }
+  </style>
+  <script>
   function parseNum(v) { var x = parseFloat(v); return isNaN(x) ? null : x; }
   function applyMetric(metric) {
     var table = document.getElementById('bench');
@@ -47,10 +41,8 @@ tr:hover td { background: #f7f7f7; }
       }
     });
   }
-
-  window.sortTable = function(th) {
+  function sortTable(th) {
     var table = document.getElementById('bench');
-    var key = th.getAttribute('data-key');
     var tbody = table.tBodies[0];
     var rows = Array.prototype.slice.call(tbody.rows);
     var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
@@ -65,11 +57,121 @@ tr:hover td { background: #f7f7f7; }
       return asc ? A.localeCompare(B) : B.localeCompare(A);
     });
     rows.forEach(function(r) { tbody.appendChild(r); });
-  };
-  document.getElementById('metric-accuracy').addEventListener('click', function() { applyMetric('accuracy'); });
-  document.getElementById('metric-loss').addEventListener('click', function() { applyMetric('loss'); });
-  applyMetric('accuracy');
-})();
-</script>
+  }
+  window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('metric-accuracy').addEventListener('click', function() { applyMetric('accuracy'); });
+    document.getElementById('metric-loss').addEventListener('click', function() { applyMetric('loss'); });
+    applyMetric('accuracy');
+  });
+  </script>
+  </head>
+<body>
+  <h1>Model × Task Benchmarks</h1>
+  <div id="controls" style="margin: 8px 0 16px;">
+    <label style="margin-right:8px;">Metric:</label>
+    <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
+    <button id="metric-loss" data-metric="loss">Loss</button>
+  </div>
+  <table id="bench">
+    <thead>
+      <tr>
+        <th data-key="model" onclick="sortTable(this)">Model</th>
+        
+          <th data-key="any_abs_gt_one" onclick="sortTable(this)">any_abs_gt_one</th>
+        
+          <th data-key="has_all_tokens" onclick="sortTable(this)">has_all_tokens</th>
+        
+          <th data-key="has_pos_and_neg" onclick="sortTable(this)">has_pos_and_neg</th>
+        
+          <th data-key="sign_of_second_place" onclick="sortTable(this)">sign_of_second_place</th>
+        
+          <th data-key="sign_of_winner" onclick="sortTable(this)">sign_of_winner</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td data-key="model">attention</td>
+        
+          
+          <td data-key="any_abs_gt_one" data-acc="1.000000" data-loss="0.005273" class="num">1.000000</td>
+        
+          
+          <td data-key="has_all_tokens" data-acc="1.000000" data-loss="0.006074" class="num">1.000000</td>
+        
+          
+          <td data-key="has_pos_and_neg" data-acc="0.972000" data-loss="0.084350" class="num">0.972000</td>
+        
+          
+          <td data-key="sign_of_second_place" data-acc="0.720000" data-loss="0.516935" class="num">0.720000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.989000" data-loss="0.036117" class="num">0.989000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">logreg</td>
+        
+          
+          <td data-key="any_abs_gt_one" data-acc="0.562000" data-loss="0.686015" class="num">0.562000</td>
+        
+          
+          <td data-key="has_all_tokens" data-acc="0.520000" data-loss="0.691926" class="num">0.520000</td>
+        
+          
+          <td data-key="has_pos_and_neg" data-acc="0.561000" data-loss="0.686709" class="num">0.561000</td>
+        
+          
+          <td data-key="sign_of_second_place" data-acc="0.666000" data-loss="0.556760" class="num">0.666000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.848000" data-loss="0.322855" class="num">0.848000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">self_attention</td>
+        
+          
+          <td data-key="any_abs_gt_one" data-acc="0.992000" data-loss="0.030073" class="num">0.992000</td>
+        
+          
+          <td data-key="has_all_tokens" data-acc="1.000000" data-loss="0.016449" class="num">1.000000</td>
+        
+          
+          <td data-key="has_pos_and_neg" data-acc="0.952000" data-loss="0.144737" class="num">0.952000</td>
+        
+          
+          <td data-key="sign_of_second_place" data-acc="0.735000" data-loss="0.518345" class="num">0.735000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.968000" data-loss="0.089798" class="num">0.968000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">temporal</td>
+        
+          
+          <td data-key="any_abs_gt_one" data-acc="0.984000" data-loss="0.065456" class="num">0.984000</td>
+        
+          
+          <td data-key="has_all_tokens" data-acc="0.506000" data-loss="0.691935" class="num">0.506000</td>
+        
+          
+          <td data-key="has_pos_and_neg" data-acc="0.557000" data-loss="0.685889" class="num">0.557000</td>
+        
+          
+          <td data-key="sign_of_second_place" data-acc="0.715000" data-loss="0.523306" class="num">0.715000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.947000" data-loss="0.160049" class="num">0.947000</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
 </body>
 </html>
