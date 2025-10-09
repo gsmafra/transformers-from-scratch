@@ -1,0 +1,13 @@
+model,task,accuracy,loss
+logreg,sign_of_second_place,0.666000,0.556760
+self_attention,sign_of_second_place,0.713000,0.524199
+attention,sign_of_second_place,0.723000,0.518920
+logreg,sign_of_winner,0.848000,0.322855
+self_attention,sign_of_winner,0.851000,0.315581
+attention,sign_of_winner,0.909000,0.195066
+logreg,has_all_tokens,0.520000,0.691926
+self_attention,has_all_tokens,1.000000,0.017895
+attention,has_all_tokens,1.000000,0.006342
+logreg,has_pos_and_neg,0.561000,0.686709
+self_attention,has_pos_and_neg,0.947000,0.138219
+attention,has_pos_and_neg,0.973000,0.082119

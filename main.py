@@ -1,4 +1,6 @@
 import wandb
+from data import DEFAULT_TASK
+from benchmarking_csv import update_benchmark_csv
 
 from report import generate_run_report
 from training import run_training
@@ -62,6 +64,10 @@ def main():
             generate_run_report(run, run_artifacts["attention"], prefix="attention")
     else:
         generate_run_report(run, run_artifacts)
+
+    # Persist benchmarking to CSV for cross-run comparison
+    if isinstance(run_artifacts, dict):
+        update_benchmark_csv(task=DEFAULT_TASK, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
 
     run.finish()
 

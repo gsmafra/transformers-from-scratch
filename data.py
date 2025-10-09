@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional
 from abc import ABC, abstractmethod
 
 import torch
@@ -6,7 +6,7 @@ from torch import Tensor, manual_seed, randn
 
 
 # Set which task the code points to by default
-DEFAULT_TASK = "sign_of_second_place"
+DEFAULT_TASK = "has_pos_and_neg"
 
 
 def prepare_data(

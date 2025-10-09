@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from torch import logit, no_grad, Tensor
 from torch.nn import BCELoss
@@ -116,6 +116,7 @@ def run_training(
     *,
     hist_every: int = 10,
     n_features: int = 2,
+    task: Optional[str] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
     x, y = prepare_data(
@@ -123,6 +124,7 @@ def run_training(
         n_samples=n_samples,
         seed=seed,
         n_features=n_features,
+        task=task,
     )
 
     # Build the suite of models to train this run
