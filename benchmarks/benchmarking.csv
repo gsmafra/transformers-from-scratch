@@ -1,7 +1,7 @@
 model,task,accuracy,loss
-logreg,sign_of_second_place,0.671000,0.556977
-self_attention,sign_of_second_place,0.972000,0.108574
-attention,sign_of_second_place,0.988000,0.065308
+logreg,sign_of_second_place,0.667000,0.556779
+self_attention,sign_of_second_place,0.975000,0.097258
+attention,sign_of_second_place,0.995000,0.056413
 logreg,sign_of_winner,0.848000,0.322855
 self_attention,sign_of_winner,0.968000,0.089798
 attention,sign_of_winner,0.989000,0.036117

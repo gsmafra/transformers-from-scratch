@@ -7,3 +7,9 @@ Commit rules:
 - Mention `README` in commit messages only when the update is truly about the README itself.
 - Only commit/push when explicitly instructed to do so by the user.
 - Do not mention benchmark CSV/HTML updates in commit messages.
+
+Code comment rules:
+
+- Write comments that describe the current state of the code and its intent.
+- Avoid comments that narrate past changes, refactors, or TODO history (e.g., "switched to X", "no longer uses Y").
+- Remove or update any comment that becomes stale after edits; comments must match the code as it exists now.

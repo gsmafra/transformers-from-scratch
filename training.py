@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, Optional
 
-from torch import logit, no_grad, Tensor
-from torch.nn import BCELoss
+from torch import no_grad, Tensor, sigmoid
+from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
@@ -21,7 +21,7 @@ def train_model(
     """Train the model and return artifacts useful for reporting/analysis."""
 
     backbone = model.backbone
-    criterion = BCELoss()
+    criterion = BCEWithLogitsLoss()
     optimizer = AdamW(
         backbone.parameters(),
         lr=model.lr_start,
@@ -48,8 +48,8 @@ def train_model(
     final_linear = model.final_linear()
 
     for epoch in range(model.epochs):
-        pred = model.forward(x_flat)  # probabilities
-        loss = criterion(pred.squeeze(-1), y)
+        logits = model.forward(x_flat)  # raw logits
+        loss = criterion(logits.squeeze(-1), y)
 
         loss_history.append(loss.item())
 
@@ -67,8 +67,8 @@ def train_model(
             bias_history.append(float(base_b.view(-1)[0]))
 
             # Accuracy this epoch
-            probs_epoch = pred.detach().squeeze(-1)
-            preds_epoch = (probs_epoch > 0.5).long()
+            logits_epoch = logits.detach().squeeze(-1)
+            preds_epoch = (logits_epoch > 0).long()
             acc_epoch = (preds_epoch == y.long()).float().mean().item()
 
             # Parameter norms
@@ -79,10 +79,10 @@ def train_model(
         logits_np = None
         if (epoch % hist_every == 0 or epoch == model.epochs - 1):
             with no_grad():
-                probs_batch = model.forward(x_flat).squeeze(-1)
+                logits_batch = model.forward(x_flat).squeeze(-1)
+                probs_batch = sigmoid(logits_batch)
                 probs_np = probs_batch.detach().cpu().numpy()
-                # Derive logits from probabilities to avoid model-specific access
-                logits_np = logit(probs_batch.clamp(1e-6, 1 - 1e-6)).detach().cpu().numpy()
+                logits_np = logits_batch.detach().cpu().numpy()
 
         on_log(
             model.name,
@@ -101,8 +101,9 @@ def train_model(
         scheduler.step()
 
     with no_grad():
-        final_probabilities = model.forward(x_flat).squeeze(-1)
-        predicted_class = (final_probabilities > 0.5).long()
+        final_logits = model.forward(x_flat).squeeze(-1)
+        final_probabilities = sigmoid(final_logits)
+        predicted_class = (final_logits > 0).long()
         accuracy = (predicted_class == y.long().squeeze(-1)).float().mean().item()
 
     w = final_linear.weight.detach()

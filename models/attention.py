@@ -1,7 +1,7 @@
 from typing import Optional
 import torch
 from torch import Tensor, softmax, tanh
-from torch.nn import Linear, Module, Sequential, Sigmoid
+from torch.nn import Linear, Module
 
 from .base import ModelAccess, make_tanh_classifier_head
 
@@ -11,8 +11,8 @@ class AttentionPoolingClassifier(Module):
         super().__init__()
         self.proj = Linear(n_features, d_model)
         self.scorer = Linear(d_model, 1)
-        # Tanh MLP head ending in Linear; add Sigmoid as final activation
-        self.classifier = Sequential(make_tanh_classifier_head(d_model), Sigmoid())
+        # Tanh MLP head ending in Linear; output logits (no Sigmoid)
+        self.classifier = make_tanh_classifier_head(d_model)
 
     def forward(self, x_in: Tensor) -> Tensor:
         hidden = tanh(self.proj(x_in))  # (N, T, d)
@@ -42,5 +42,5 @@ class AttentionAccess(ModelAccess):
         )
 
     def final_linear(self) -> Linear:  # type: ignore[override]
-        # final linear lives inside the head at index 0->Sequential, index 2 of that
-        return self.backbone.classifier[0][2]  # type: ignore[attr-defined,index]
+        # final linear is the last layer of the head Sequential
+        return self.backbone.classifier[2]  # type: ignore[attr-defined,index]

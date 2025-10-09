@@ -1,11 +1,12 @@
 from typing import Optional
-from torch.nn import Linear, Module, Sequential, Sigmoid, Flatten
+from torch.nn import Linear, Module, Sequential, Flatten
 
 from .base import ModelAccess
 
 
 def build_logreg(sequence_length: int, n_features: int) -> Module:
-    return Sequential(Flatten(start_dim=1), Linear(sequence_length * n_features, 1), Sigmoid())
+    # Output raw logits (no Sigmoid) for numerical stability with BCEWithLogitsLoss
+    return Sequential(Flatten(start_dim=1), Linear(sequence_length * n_features, 1))
 
 
 class LogRegAccess(ModelAccess):

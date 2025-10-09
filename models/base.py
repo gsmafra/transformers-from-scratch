@@ -22,9 +22,8 @@ class ModelAccess(ABC):
     name: str
     backbone: Module
     epochs: int
-    momentum: float
-    lr_start: Optional[float]
-    lr_end: Optional[float]
+    lr_start: float
+    lr_end: float
 
     def __init__(
         self,
@@ -32,16 +31,16 @@ class ModelAccess(ABC):
         backbone: Module,
         *,
         epochs: int,
-        momentum: float = 0.9,
-        lr_start: float = 0.1,
-        lr_end: float = 0.1,
+        lr_start: Optional[float] = None,
+        lr_end: Optional[float] = None,
     ) -> None:
         self.name = name
         self.backbone = backbone
         self.epochs = epochs
-        self.momentum = momentum
-        self.lr_start = lr_start
-        self.lr_end = lr_end
+        # Coalesce schedule to valid floats
+        base = 0.1 if lr_start is None else float(lr_start)
+        self.lr_start = base
+        self.lr_end = base if lr_end is None else float(lr_end)
 
     def forward(self, x):  # passthrough to module
         return self.backbone(x)

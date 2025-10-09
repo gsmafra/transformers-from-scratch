@@ -1,6 +1,6 @@
 from typing import Optional
 from torch import Tensor, tanh
-from torch.nn import Linear, Module, Sequential, Sigmoid
+from torch.nn import Linear, Module
 
 from .base import ModelAccess
 
@@ -9,7 +9,8 @@ class SimpleTemporalPoolingClassifier(Module):
     def __init__(self, sequence_length: int, n_features: int = 2, d_model: int = 16) -> None:
         super().__init__()
         self.proj = Linear(n_features, d_model)
-        self.classifier = Sequential(Linear(sequence_length, 1), Sigmoid())
+        # Output raw logits (no Sigmoid)
+        self.classifier = Linear(sequence_length, 1)
 
     def forward(self, x_in: Tensor) -> Tensor:
         h = tanh(self.proj(x_in))  # (N, T, d)
@@ -40,4 +41,4 @@ class TemporalAccess(ModelAccess):
         )
 
     def final_linear(self) -> Linear:  # type: ignore[override]
-        return self.backbone.classifier[0]  # type: ignore[attr-defined,index]
+        return self.backbone.classifier  # type: ignore[attr-defined]
