@@ -1,6 +1,7 @@
 import wandb
 from data import DEFAULT_TASK
 from benchmarking_csv import update_benchmark_csv
+from benchmarking_html import generate_benchmark_html
 
 from report import generate_run_report
 from training import run_training
@@ -70,6 +71,9 @@ def main():
         update_benchmark_csv(task=DEFAULT_TASK, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
 
     run.finish()
+
+    # Last step: render a sortable HTML view of the benchmarking CSV
+    generate_benchmark_html(csv_path="benchmarks/benchmarking.csv", html_path="benchmarks/index.html")
 
 
 if __name__ == "__main__":

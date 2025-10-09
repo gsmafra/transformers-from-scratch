@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model × Task Benchmarks</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; margin: 24px; }
+h1 { font-size: 20px; margin: 0 0 12px; text-align: center; }
+table { border-collapse: collapse; width: 90%; margin: 0 auto; }
+th, td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: center; }
+th { cursor: pointer; user-select: none; position: sticky; top: 0; background: #fafafa; }
+tr:hover td { background: #f7f7f7; }
+.num { text-align: center; font-variant-numeric: tabular-nums; }
+.arrow { float: right; opacity: 0.6; }
+</style>
+</head>
+<body>
+<h1>Model × Task Benchmarks</h1>
+<div id="controls" style="margin: 8px 0 16px;">
+  <label style="margin-right:8px;">Metric:</label>
+  <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
+  <button id="metric-loss" data-metric="loss">Loss</button>
+</div>
+<table id="bench">
+<thead>
+  <tr><th data-key="model" onclick="sortTable(this)">Model</th><th data-key="has_all_tokens" onclick="sortTable(this)">has_all_tokens</th><th data-key="has_pos_and_neg" onclick="sortTable(this)">has_pos_and_neg</th><th data-key="sign_of_second_place" onclick="sortTable(this)">sign_of_second_place</th><th data-key="sign_of_winner" onclick="sortTable(this)">sign_of_winner</th></tr>
+</thead>
+<tbody>
+  <tr><td data-key="model">attention</td><td data-key="has_all_tokens" data-acc="1.000000" data-loss="0.006342" class="num">1.000000</td><td data-key="has_pos_and_neg" data-acc="0.973000" data-loss="0.082119" class="num">0.973000</td><td data-key="sign_of_second_place" data-acc="0.723000" data-loss="0.518920" class="num">0.723000</td><td data-key="sign_of_winner" data-acc="0.909000" data-loss="0.195066" class="num">0.909000</td></tr>
+  <tr><td data-key="model">logreg</td><td data-key="has_all_tokens" data-acc="0.520000" data-loss="0.691926" class="num">0.520000</td><td data-key="has_pos_and_neg" data-acc="0.561000" data-loss="0.686709" class="num">0.561000</td><td data-key="sign_of_second_place" data-acc="0.666000" data-loss="0.556760" class="num">0.666000</td><td data-key="sign_of_winner" data-acc="0.848000" data-loss="0.322855" class="num">0.848000</td></tr>
+  <tr><td data-key="model">self_attention</td><td data-key="has_all_tokens" data-acc="1.000000" data-loss="0.017895" class="num">1.000000</td><td data-key="has_pos_and_neg" data-acc="0.947000" data-loss="0.138219" class="num">0.947000</td><td data-key="sign_of_second_place" data-acc="0.713000" data-loss="0.524199" class="num">0.713000</td><td data-key="sign_of_winner" data-acc="0.851000" data-loss="0.315581" class="num">0.851000</td></tr>
+</tbody>
+</table>
+<script>
+(function() {
+  function parseNum(v) { var x = parseFloat(v); return isNaN(x) ? null : x; }
+  function applyMetric(metric) {
+    var table = document.getElementById('bench');
+    var cells = table.querySelectorAll('tbody td[data-acc]');
+    cells.forEach(function(td) {
+      var raw = td.getAttribute(metric === 'loss' ? 'data-loss' : 'data-acc') || '';
+      if (metric === 'loss') {
+        td.textContent = raw;
+      } else {
+        var x = parseFloat(raw);
+        td.textContent = isNaN(x) ? '' : (x * 100).toFixed(1) + '%';
+      }
+    });
+  }
+
+  window.sortTable = function(th) {
+    var table = document.getElementById('bench');
+    var key = th.getAttribute('data-key');
+    var tbody = table.tBodies[0];
+    var rows = Array.prototype.slice.call(tbody.rows);
+    var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
+    var asc = th.getAttribute('data-asc') !== 'true';
+    for (var i=0;i<th.parentNode.children.length;i++) th.parentNode.children[i].removeAttribute('data-asc');
+    th.setAttribute('data-asc', asc);
+    rows.sort(function(a,b) {
+      var A = a.cells[idx].textContent.trim();
+      var B = b.cells[idx].textContent.trim();
+      var An = parseNum(A), Bn = parseNum(B);
+      if (An !== null && Bn !== null) return asc ? (An - Bn) : (Bn - An);
+      return asc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  };
+  document.getElementById('metric-accuracy').addEventListener('click', function() { applyMetric('accuracy'); });
+  document.getElementById('metric-loss').addEventListener('click', function() { applyMetric('loss'); });
+  applyMetric('accuracy');
+})();
+</script>
+</body>
+</html>
