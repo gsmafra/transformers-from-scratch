@@ -22,3 +22,4 @@ class Task(ABC):
         y: (n,) floats in {0.0, 1.0}
         """
         raise NotImplementedError
+

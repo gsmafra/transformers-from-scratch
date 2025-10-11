@@ -34,9 +34,9 @@ def generate_benchmark_html(
             "loss": (r.get("loss", "") or ""),
         }
 
-    # Render using Jinja2 template
-    base_dir = os.path.dirname(__file__)
-    templates_dir = os.path.join(base_dir, "templates")
+    # Render using Jinja2 template; templates live at repo root under 'templates'
+    repo_root = os.path.dirname(os.path.dirname(__file__))
+    templates_dir = os.path.join(repo_root, "templates")
     env = Environment(
         loader=FileSystemLoader(templates_dir),
         autoescape=select_autoescape(["html", "xml"]),
@@ -47,3 +47,4 @@ def generate_benchmark_html(
 
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(output)
+

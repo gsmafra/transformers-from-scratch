@@ -42,3 +42,4 @@ class TemporalAccess(ModelAccess):
 
     def final_linear(self) -> Linear:  # type: ignore[override]
         return self.backbone.classifier  # type: ignore[attr-defined]
+

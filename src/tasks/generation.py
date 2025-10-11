@@ -39,3 +39,4 @@ def prepare_data(
     if (y_cand > 0.5).sum() == 0 or (y_cand <= 0.5).sum() == 0:
         raise ValueError("Candidate pool missing a class; increase candidate size or adjust task parameters.")
     return stratified_sample_balanced(x_cand, y_cand, n_samples)
+

@@ -16,3 +16,4 @@ class SignOfWinnerTask(Task):
         x = randn(n, T, F)
         y = self.label(x)
         return x, y
+

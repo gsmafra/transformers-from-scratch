@@ -39,3 +39,4 @@ def update_benchmark_csv(task: str, results: Dict[str, Dict[str, Any]], *, csv_p
         writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
+

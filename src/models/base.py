@@ -48,3 +48,4 @@ class ModelAccess(ABC):
     @abstractmethod
     def final_linear(self) -> Linear:
         raise NotImplementedError
+
