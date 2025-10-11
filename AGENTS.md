@@ -7,6 +7,14 @@ Commit rules:
 - Mention `README` in commit messages only when the update is truly about the README itself.
 - Only commit/push when explicitly instructed to do so by the user.
 - Do not mention benchmark CSV/HTML updates in commit messages.
+- Each commit message must be a single line; no body or multiline messages.
+
+Commit message scope and verification:
+
+- Commit messages must describe only the diff since the current HEAD.
+- Never summarize the whole session; scope commit text to the actual changes.
+- Before proposing/creating a commit, inspect `git diff --name-status HEAD` (and optionally `git diff --stat HEAD`) to verify exactly what changed.
+- When asked to report "what changed since last commit", use the HEAD-relative diff; do not mix in earlier, already-committed work.
 
 Code comment rules:
 

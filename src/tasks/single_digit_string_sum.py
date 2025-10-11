@@ -6,7 +6,7 @@ from torch import Tensor
 from .base import Task
 
 
-# Fixed vocabulary for single-digit equations like "1+2=3"
+# Vocabulary for equations like "a+b=c" with single digits
 _TOKENS: List[str] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "="]
 _TOK2IDX: Dict[str, int] = {ch: i for i, ch in enumerate(_TOKENS)}
 
@@ -18,17 +18,11 @@ def _one_hot(indices: Tensor, vocab_size: int) -> Tensor:
 
 
 class SingleDigitStringSumTask(Task):
-
     feature_dim: int = len(_TOKENS)
 
     def label(self, x: Tensor) -> Tensor:
-        """Label is 1.0 if the equation "a+b=c" is correct, else 0.0.
-
-        Expects one-hot tokens over the fixed vocabulary of size 12 and
-        sequence length T == 5 corresponding to tokens: d + d = d.
-        """
-        if x.dim() != 3 or x.size(1) != 5 or x.size(2) < len(_TOKENS):
-            raise ValueError("SingleDigitStringSumTask expects shape (N, 5, V>=12) with one-hot tokens")
+        if x.dim() != 3 or x.size(1) != 5 or x.size(2) < self.feature_dim:
+            raise ValueError("Expected shape (N, 5, V>=12) with one-hot tokens")
 
         idx = x.argmax(dim=2)  # (N, 5)
         a = idx[:, 0]
@@ -37,11 +31,9 @@ class SingleDigitStringSumTask(Task):
         eq = idx[:, 3]
         c = idx[:, 4]
 
-        # Validate operators
         plus_ok = plus.eq(_TOK2IDX["+"])
         eq_ok = eq.eq(_TOK2IDX["="])
 
-        # Map indices for digits into numeric values (assume 0..9 map directly)
         a_val = a.clamp_max(9).to(torch.long)
         b_val = b.clamp_max(9).to(torch.long)
         c_val = c.clamp_max(9).to(torch.long)
@@ -51,61 +43,54 @@ class SingleDigitStringSumTask(Task):
         return ok.float()
 
     def generate_candidates(self, n: int, T: int) -> Tuple[Tensor, Tensor]:
-        """Generate valid equations "a+b=c" with both correct and incorrect labels.
+        """Generate pairs: for each random (a,b) with a+b <= 9, emit one correct and one incorrect sample.
 
-        Returns one-hot tokens of shape (n, 5, F). Requires F >= 12 and T == 5.
-        Half the samples are correct (y=1), half incorrect (y=0), shuffled.
+        If a+b > 9, discard that pair (emit nothing). Truncate to n after shuffling.
+        Output one-hot tokens with shape (N, 5, self.feature_dim).
         """
         if T != 5:
-            raise ValueError("SingleDigitStringSumTask requires sequence_length T == 5 (format d+d=d)")
-        F = self.feature_dim
+            raise ValueError("Requires sequence_length T == 5 (format d+d=d)")
 
-        target_pos = n // 2
-        target_neg = n - target_pos
+        needed_pairs = (n + 1) // 2  # two samples (pos+neg) per valid pair
+        pairs: List[Tuple[int, int]] = []
 
-        # Positives: choose (a,b) such that a+b <= 9, set c = a+b
-        pos_pairs: List[Tuple[int, int]] = [(a, b) for a in range(10) for b in range(10) if a + b <= 9]
-        pos_choice = torch.randint(0, len(pos_pairs), (target_pos,))
-        a_pos = torch.tensor([pos_pairs[i][0] for i in pos_choice.tolist()], dtype=torch.long)
-        b_pos = torch.tensor([pos_pairs[i][1] for i in pos_choice.tolist()], dtype=torch.long)
-        c_pos = a_pos + b_pos
+        # Keep sampling until we collect enough valid pairs
+        while len(pairs) < needed_pairs:
+            # Sample in chunks for efficiency
+            chunk = max(needed_pairs - len(pairs), 128)
+            a = torch.randint(0, 10, (chunk,))
+            b = torch.randint(0, 10, (chunk,))
+            mask = (a + b) <= 9
+            valid = torch.nonzero(mask, as_tuple=False).squeeze(1)
+            for i in valid.tolist():
+                pairs.append((int(a[i].item()), int(b[i].item())))
+                if len(pairs) >= needed_pairs:
+                    break
 
-        pos_seq = torch.stack(
-            [
-                a_pos,
-                torch.full_like(a_pos, _TOK2IDX["+"] ),
-                b_pos,
-                torch.full_like(a_pos, _TOK2IDX["="] ),
-                c_pos,
-            ],
-            dim=1,
-        )
+        # Build positives and matched negatives per pair
+        pos_list: List[Tensor] = []
+        neg_list: List[Tensor] = []
+        for a, b in pairs:
+            c_true = a + b
+            pos_seq = torch.tensor([a, _TOK2IDX["+"], b, _TOK2IDX["="], c_true], dtype=torch.long)
 
-        # Negatives: arbitrary (a,b); choose c != a+b
-        a_neg = torch.randint(0, 10, (target_neg,))
-        b_neg = torch.randint(0, 10, (target_neg,))
-        c_true = a_neg + b_neg
-        # pick a different single-digit result
-        c_neg = (c_true + torch.randint(1, 10, (target_neg,))) % 10
+            # choose c_neg != c_true
+            # pick an offset in 1..9 and wrap within 0..9
+            offset = int(torch.randint(1, 10, ()).item())
+            c_neg = (c_true + offset) % 10
+            neg_seq = torch.tensor([a, _TOK2IDX["+"], b, _TOK2IDX["="], c_neg], dtype=torch.long)
 
-        neg_seq = torch.stack(
-            [
-                a_neg,
-                torch.full_like(a_neg, _TOK2IDX["+"] ),
-                b_neg,
-                torch.full_like(a_neg, _TOK2IDX["="] ),
-                c_neg,
-            ],
-            dim=1,
-        )
+            pos_list.append(pos_seq)
+            neg_list.append(neg_seq)
 
-        seq_idx = torch.cat([pos_seq, neg_seq], dim=0)
-        y = torch.cat([torch.ones(target_pos), torch.zeros(target_neg)], dim=0)
+        seq_idx = torch.stack(pos_list + neg_list, dim=0)
+        y = torch.cat([torch.ones(len(pos_list)), torch.zeros(len(neg_list))], dim=0)
 
-        # Shuffle
-        perm = torch.randperm(n)
-        seq_idx = seq_idx[perm]
-        y = y[perm]
+        # Shuffle and truncate to n
+        perm = torch.randperm(seq_idx.size(0))
+        seq_idx = seq_idx[perm][:n]
+        y = y[perm][:n]
 
-        x = _one_hot(seq_idx, F)
+        x = _one_hot(seq_idx, self.feature_dim)
         return x, y
+
