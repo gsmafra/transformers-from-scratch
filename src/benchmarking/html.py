@@ -35,7 +35,7 @@ def generate_benchmark_html(
         }
 
     # Render using Jinja2 template; templates live at repo root under 'templates'
-    repo_root = os.path.dirname(os.path.dirname(__file__))
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     templates_dir = os.path.join(repo_root, "templates")
     env = Environment(
         loader=FileSystemLoader(templates_dir),
