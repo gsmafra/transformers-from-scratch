@@ -1,4 +1,5 @@
 from typing import Optional
+
 import torch
 from torch import Tensor
 from torch.nn import Linear, Module
@@ -44,4 +45,3 @@ class SelfAttentionAccess(ModelAccess):
     def final_linear(self) -> Linear:  # type: ignore[override]
         # final linear is the last layer of the head Sequential
         return self.backbone.classifier[2]  # type: ignore[attr-defined,index]
-

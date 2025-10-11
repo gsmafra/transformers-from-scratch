@@ -1,8 +1,8 @@
-from .sign_of_winner import SignOfWinnerTask
-from .sign_of_second_place import SignOfSecondPlaceTask
-from .has_pos_and_neg import HasPosAndNegTask
-from .has_all_tokens import HasAllTokensTask
 from .any_abs_gt_one import AnyAbsGreaterThanOneTask
+from .has_all_tokens import HasAllTokensTask
+from .has_pos_and_neg import HasPosAndNegTask
+from .sign_of_second_place import SignOfSecondPlaceTask
+from .sign_of_winner import SignOfWinnerTask
 
 
 # Central registry of available tasks. This module is standalone so that
@@ -17,4 +17,3 @@ TASK_REGISTRY = {
 }
 
 __all__ = ["TASK_REGISTRY"]
-

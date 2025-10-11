@@ -1,10 +1,9 @@
 import wandb
 
-from src.tasks import DEFAULT_TASK
 from src.benchmarking.csv import update_benchmark_csv
 from src.benchmarking.html import generate_benchmark_html
-
 from src.report import generate_run_report
+from src.tasks import DEFAULT_TASK
 from src.training import run_training
 
 

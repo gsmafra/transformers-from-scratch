@@ -1,5 +1,6 @@
-import torch
 from typing import Tuple
+
+import torch
 from torch import Tensor, randn
 
 from .base import Task
@@ -16,4 +17,3 @@ class SignOfWinnerTask(Task):
         x = randn(n, T, F)
         y = self.label(x)
         return x, y
-

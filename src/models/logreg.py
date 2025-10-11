@@ -1,5 +1,6 @@
 from typing import Optional
-from torch.nn import Linear, Module, Sequential, Flatten
+
+from torch.nn import Flatten, Linear, Module, Sequential
 
 from .base import ModelAccess
 
@@ -29,4 +30,3 @@ class LogRegAccess(ModelAccess):
 
     def final_linear(self) -> Linear:  # type: ignore[override]
         return self.backbone[1]  # type: ignore[index]
-

@@ -1,13 +1,13 @@
 from typing import Any, Callable, Dict, Optional
 
-from torch import no_grad, Tensor, sigmoid
+from torch import Tensor, no_grad, sigmoid
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 
-from tasks import prepare_data
-from models import ModelAccess, LogRegAccess, AttentionAccess, SelfAttentionAccess, TemporalAccess
+from .models import AttentionAccess, LogRegAccess, ModelAccess, SelfAttentionAccess, TemporalAccess
+from .tasks import prepare_data
 
 
 def train_model(
@@ -164,4 +164,3 @@ def run_training(
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
 
     return results
-
