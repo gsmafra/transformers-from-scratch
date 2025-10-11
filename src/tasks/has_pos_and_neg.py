@@ -10,8 +10,8 @@ class HasPosAndNegTask(Task):
         has_neg = (x2d < 0).any(dim=1)
         return (has_pos & has_neg).float()
 
-    def generate_candidates(self, n: int, T: int, F: int):
+    def generate_candidates(self, n: int, T: int):
+        F = self.feature_dim
         x = randn(n, T, F)
         y = self.label(x)
         return x, y
-

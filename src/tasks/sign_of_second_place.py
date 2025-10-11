@@ -13,10 +13,10 @@ class SignOfSecondPlaceTask(Task):
         second_vals = x2d.gather(1, second_idx.unsqueeze(1)).squeeze(1)
         return (second_vals > 0).float()
 
-    def generate_candidates(self, n: int, T: int, F: int):
+    def generate_candidates(self, n: int, T: int):
+        F = self.feature_dim
         if T < 2:
             raise ValueError("sign_of_second_place requires sequence_length >= 2")
         x = randn(n, T, F)
         y = self.label(x)
         return x, y
-

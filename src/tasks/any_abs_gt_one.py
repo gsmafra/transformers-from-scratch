@@ -8,8 +8,8 @@ class AnyAbsGreaterThanOneTask(Task):
         # Positive if any raw element exceeds unit magnitude
         return (x.abs() > 1.0).any(dim=(1, 2)).float()
 
-    def generate_candidates(self, n: int, T: int, F: int):
+    def generate_candidates(self, n: int, T: int):
+        F = self.feature_dim
         x = randn(n, T, F)
         y = self.label(x)
         return x, y
-

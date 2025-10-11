@@ -13,7 +13,8 @@ class SignOfWinnerTask(Task):
         winner_vals = x2d.gather(1, winner_idx.unsqueeze(1)).squeeze(1)
         return (winner_vals > 0).float()
 
-    def generate_candidates(self, n: int, T: int, F: int) -> Tuple[Tensor, Tensor]:
+    def generate_candidates(self, n: int, T: int) -> Tuple[Tensor, Tensor]:
+        F = self.feature_dim
         x = randn(n, T, F)
         y = self.label(x)
         return x, y

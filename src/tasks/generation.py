@@ -7,7 +7,7 @@ from .sampling import stratified_sample_balanced
 
 
 # Set which task the code points to by default
-DEFAULT_TASK = "sign_of_second_place"
+DEFAULT_TASK = "single_digit_string_sum"
 
 
 def prepare_data(
@@ -16,15 +16,11 @@ def prepare_data(
     seed: int = 0,
     *,
     task: Optional[str] = None,
-    n_features: int = 2,
 ) -> Tuple[Tensor, Tensor]:
-    """Generate sequences and labels for a selected dummy task.
+    """Generate sequences and labels for a selected task.
 
-    Inputs have `n_features` per timestep. Each Task implements `label(x)` so
-    labeling logic lives within the task, not as free functions.
-
-    Returns `(x, y)` with shapes `(n_samples, sequence_length, n_features)` and
-    `(n_samples,)` respectively.
+    Returns `(x, y)` with shapes `(n_samples, sequence_length, F)` and `(n_samples,)`.
+    Task determines its feature dimension F via the `feature_dim` attribute.
     """
     manual_seed(seed)
 
@@ -35,7 +31,7 @@ def prepare_data(
 
     # Generate candidates then stratified sample 50/50 with replacement
     n_cand = max(10 * n_samples, 512)
-    x_cand, y_cand = TASK_REGISTRY[task_name].generate_candidates(n_cand, sequence_length, n_features)
+    x_cand, y_cand = TASK_REGISTRY[task_name].generate_candidates(n_cand, sequence_length)
     # If a class is missing, fail fast and surface a clear error
     if (y_cand > 0.5).sum() == 0 or (y_cand <= 0.5).sum() == 0:
         raise ValueError("Candidate pool missing a class; increase candidate size or adjust task parameters.")

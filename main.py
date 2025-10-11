@@ -27,7 +27,7 @@ def main():
         wandb.define_metric(f"{name}/metrics/*", step_metric=f"{name}/step")
         wandb.define_metric(f"{name}/distributions/*", step_metric=f"{name}/step")
 
-    # Unified logger: metrics + optional distributions, per model prefix
+    # Unified logger: metrics per model prefix
     def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
         merged = {
             f"{model_name}/metrics/loss": metrics.get("loss"),
@@ -36,10 +36,6 @@ def main():
             f"{model_name}/metrics/weight_norm": metrics.get("weight_norm"),
             f"{model_name}/step": epoch,
         }
-        if probs is not None:
-            merged[f"{model_name}/distributions/probabilities"] = wandb.Histogram(probs, num_bins=30)
-        if logits is not None:
-            merged[f"{model_name}/distributions/logits"] = wandb.Histogram(logits, num_bins=30)
         # Single commit per epoch per model to keep steps tidy
         run.log(merged)
 

@@ -131,7 +131,6 @@ def run_training(
     on_log: Callable[[str, int, Dict[str, float], Any, Any], None],
     *,
     hist_every: int = 10,
-    n_features: int = 2,
     task: Optional[str] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
@@ -139,16 +138,18 @@ def run_training(
         sequence_length=sequence_length,
         n_samples=n_samples,
         seed=seed,
-        n_features=n_features,
         task=task,
     )
 
+    # Align model input dims with generated data
+    n_features_eff = int(x.size(-1))
+
     # Build the suite of models to train this run
     models = {
-        "logreg": LogRegAccess(sequence_length=sequence_length, n_features=n_features),
-        "temporal": TemporalAccess(sequence_length=sequence_length, n_features=n_features),
-        "self_attention": SelfAttentionAccess(n_features=n_features),
-        "attention": AttentionAccess(n_features=n_features),
+        "logreg": LogRegAccess(sequence_length=sequence_length, n_features=n_features_eff),
+        "temporal": TemporalAccess(sequence_length=sequence_length, n_features=n_features_eff),
+        "self_attention": SelfAttentionAccess(n_features=n_features_eff),
+        "attention": AttentionAccess(n_features=n_features_eff),
     }
 
     results: Dict[str, Dict[str, Any]] = {}
