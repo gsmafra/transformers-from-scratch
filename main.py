@@ -1,5 +1,3 @@
-import os
-
 import wandb
 
 from src.benchmarking.csv import update_benchmark_csv
@@ -7,6 +5,7 @@ from src.benchmarking.html import generate_benchmark_html
 from src.report import generate_run_report
 from src.tasks import DEFAULT_TASK
 from src.training import run_training
+from src.wandb_init import init_wandb
 
 
 SEQUENCE_LENGTH = 5
@@ -17,21 +16,9 @@ def main():
     task = DEFAULT_TASK
     project_name = f"transformer-scratchpad-{task}"
 
-    # Reduce W&B console verbosity and disable console capture
-    os.environ.setdefault("WANDB_SILENT", "true")
-    os.environ.setdefault("WANDB_CONSOLE", "off")
-
-    run = wandb.init(
-        project=project_name,
-        settings=wandb.Settings(_disable_stats=True, console="off"),
-    )
-
-    # Configure per-model metrics with minimal duplication
+    # Configure W&B and per-model metric namespaces
     model_names = ["logreg", "temporal", "self_attention", "self_attention_qkv", "attention"]
-    for name in model_names:
-        wandb.define_metric(f"{name}/step")
-        wandb.define_metric(f"{name}/metrics/*", step_metric=f"{name}/step")
-        wandb.define_metric(f"{name}/distributions/*", step_metric=f"{name}/step")
+    run = init_wandb(project=project_name, model_names=model_names)
 
     # Unified logger: metrics per model prefix
     def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
@@ -51,19 +38,12 @@ def main():
     )
 
     # Generate eval/report panels under each model prefix
-    if isinstance(run_artifacts, dict):
-        for name, artifacts in run_artifacts.items():
-            generate_run_report(run, artifacts, prefix=name)
-    else:
-        generate_run_report(run, run_artifacts)
-
-    # Persist benchmarking to CSV for cross-run comparison
-    if isinstance(run_artifacts, dict):
-        update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
+    for name, artifacts in run_artifacts.items():
+        generate_run_report(run, artifacts, prefix=name)
 
     run.finish()
 
-    # Last step: render a sortable HTML view of the benchmarking CSV
+    update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
     generate_benchmark_html(csv_path="benchmarks/benchmarking.csv", html_path="benchmarks/index.html")
 
 
