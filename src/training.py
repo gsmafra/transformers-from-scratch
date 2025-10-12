@@ -1,20 +1,12 @@
 from typing import Any, Callable, Dict, Optional
 
-from tqdm import trange
-
 from torch import Tensor, no_grad, sigmoid
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
+from tqdm import trange
 
-
-from .models import (
-    AttentionAccess,
-    LogRegAccess,
-    ModelAccess,
-    SelfAttentionAccess,
-    SelfAttentionQKVAccess,
-    TemporalAccess,
-)
+from .models import ModelAccess
+from .models.registry import build_models
 from .tasks import prepare_data
 
 
@@ -23,8 +15,6 @@ def train_model(
     x: Tensor,
     y: Tensor,
     on_log: Callable[[str, int, Dict[str, float], Any, Any], None],
-    *,
-    hist_every: int,
 ) -> Dict[str, Any]:
     """Train the model and return artifacts useful for reporting/analysis."""
 
@@ -120,7 +110,6 @@ def run_training(
     seed: int,
     on_log: Callable[[str, int, Dict[str, float], Any, Any], None],
     *,
-    hist_every: int = 10,
     task: Optional[str] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
@@ -135,13 +124,7 @@ def run_training(
     n_features_eff = int(x.size(-1))
 
     # Build the suite of models to train this run
-    models = {
-        "logreg": LogRegAccess(sequence_length=sequence_length, n_features=n_features_eff),
-        "temporal": TemporalAccess(sequence_length=sequence_length, n_features=n_features_eff),
-        "self_attention": SelfAttentionAccess(n_features=n_features_eff),
-        "self_attention_qkv": SelfAttentionQKVAccess(n_features=n_features_eff),
-        "attention": AttentionAccess(n_features=n_features_eff),
-    }
+    models = build_models(sequence_length=sequence_length, n_features=n_features_eff)
 
     results: Dict[str, Dict[str, Any]] = {}
     for name, mdl in models.items():
@@ -150,7 +133,6 @@ def run_training(
             x=x,
             y=y,
             on_log=on_log,
-            hist_every=hist_every,
         )
         # Use wrapper name to key results to avoid mismatch
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
