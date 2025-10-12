@@ -1,0 +1,52 @@
+from typing import Optional
+
+import torch
+from torch import Tensor
+from torch.nn import Linear, Module
+
+from .base import ModelAccess, make_tanh_classifier_head
+
+
+class SelfAttentionQKVClassifier(Module):
+    def __init__(self, n_features: int = 2, d_model: int = 16) -> None:
+        super().__init__()
+        self.d_model = d_model
+        # self.proj = Linear(n_features, d_model)
+        self.q_proj = Linear(n_features, d_model)
+        self.k_proj = Linear(n_features, d_model)
+        self.v_proj = Linear(n_features, d_model)
+        self.classifier = make_tanh_classifier_head(d_model)
+
+    def forward(self, x_in: Tensor) -> Tensor:
+        # hidden = torch.tanh(self.proj(x_in))  # (N, T, d)
+        q = torch.tanh(self.q_proj(x_in))  # (N, T, d)
+        k = torch.tanh(self.k_proj(x_in))  # (N, T, d)
+        v = torch.tanh(self.v_proj(x_in))  # (N, T, d)
+        scores = torch.matmul(q, k.transpose(1, 2)) / (self.d_model ** 0.5)  # (N, T, T)
+        attn = torch.softmax(scores, dim=2)  # (N, T, T)
+        context = attn @ v  # (N, T, d)
+        pooled = context.mean(dim=1)  # (N, d)
+        return self.classifier(pooled)
+
+
+class SelfAttentionQKVAccess(ModelAccess):
+    def __init__(
+        self,
+        n_features: int = 2,
+        *,
+        epochs: int = 1000,
+        d_model: int = 16,
+        lr_start: Optional[float] = 0.4,
+        lr_end: Optional[float] = 0.2,
+    ) -> None:
+        super().__init__(
+            name="self_attention_qkv",
+            backbone=SelfAttentionQKVClassifier(n_features=n_features, d_model=d_model),
+            epochs=epochs,
+            lr_start=lr_start,
+            lr_end=lr_end,
+        )
+
+    def final_linear(self) -> Linear:  # type: ignore[override]
+        return self.backbone.classifier[2]  # type: ignore[attr-defined,index]
+

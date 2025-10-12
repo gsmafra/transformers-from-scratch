@@ -1,3 +1,5 @@
+import os
+
 import wandb
 
 from src.benchmarking.csv import update_benchmark_csv
@@ -15,13 +17,17 @@ def main():
     task = DEFAULT_TASK
     project_name = f"transformer-scratchpad-{task}"
 
+    # Reduce W&B console verbosity and disable console capture
+    os.environ.setdefault("WANDB_SILENT", "true")
+    os.environ.setdefault("WANDB_CONSOLE", "off")
+
     run = wandb.init(
         project=project_name,
-        settings=wandb.Settings(_disable_stats=True),  # disable W&B system metrics
+        settings=wandb.Settings(_disable_stats=True, console="off"),
     )
 
     # Configure per-model metrics with minimal duplication
-    model_names = ["logreg", "temporal", "self_attention", "attention"]
+    model_names = ["logreg", "temporal", "self_attention", "self_attention_qkv", "attention"]
     for name in model_names:
         wandb.define_metric(f"{name}/step")
         wandb.define_metric(f"{name}/metrics/*", step_metric=f"{name}/step")

@@ -1,12 +1,22 @@
 from typing import Any, Callable, Dict, Optional
 
+from tqdm import trange
+
 from torch import Tensor, no_grad, sigmoid
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 
-from .models import AttentionAccess, LogRegAccess, ModelAccess, SelfAttentionAccess, TemporalAccess
+
+from .models import (
+    AttentionAccess,
+    LogRegAccess,
+    ModelAccess,
+    SelfAttentionAccess,
+    SelfAttentionQKVAccess,
+    TemporalAccess,
+)
 from .tasks import prepare_data
 
 
@@ -47,7 +57,7 @@ def train_model(
     # Final linear for logging/diagnostics
     final_linear = model.final_linear()
 
-    for epoch in range(model.epochs):
+    for epoch in trange(model.epochs, desc=f"train:{model.name}", leave=False):
         logits = model.forward(x_flat)  # raw logits
         loss = criterion(logits.squeeze(-1), y)
 
@@ -149,6 +159,7 @@ def run_training(
         "logreg": LogRegAccess(sequence_length=sequence_length, n_features=n_features_eff),
         "temporal": TemporalAccess(sequence_length=sequence_length, n_features=n_features_eff),
         "self_attention": SelfAttentionAccess(n_features=n_features_eff),
+        "self_attention_qkv": SelfAttentionQKVAccess(n_features=n_features_eff),
         "attention": AttentionAccess(n_features=n_features_eff),
     }
 

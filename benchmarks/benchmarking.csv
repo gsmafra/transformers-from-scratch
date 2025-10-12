@@ -22,4 +22,5 @@ attention,any_abs_gt_one,1.000000,0.005273
 logreg,single_digit_string_sum,0.651000,0.631105
 temporal,single_digit_string_sum,0.642000,0.642874
 self_attention,single_digit_string_sum,0.942000,0.161792
-attention,single_digit_string_sum,0.953000,0.150632
+attention,single_digit_string_sum,0.913000,0.216740
+self_attention_qkv,single_digit_string_sum,0.899000,0.235794
