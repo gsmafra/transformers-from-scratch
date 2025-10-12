@@ -35,13 +35,9 @@ def main():
 
     # Unified logger: metrics per model prefix
     def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
-        merged = {
-            f"{model_name}/metrics/loss": metrics.get("loss"),
-            f"{model_name}/metrics/accuracy": metrics.get("accuracy"),
-            f"{model_name}/metrics/grad_norm": metrics.get("grad_norm"),
-            f"{model_name}/metrics/weight_norm": metrics.get("weight_norm"),
-            f"{model_name}/step": epoch,
-        }
+        merged = {f"{model_name}/step": epoch}
+        for key, value in (metrics or {}).items():
+            merged[f"{model_name}/metrics/{key}"] = value
         # Single commit per epoch per model to keep steps tidy
         run.log(merged)
 

@@ -1,24 +1,23 @@
-from typing import Optional
+from typing import Dict, Optional
 
 import torch
 from torch import Tensor
 from torch.nn import Linear, Module
 
 from .base import ModelAccess, make_tanh_classifier_head
+from .metrics import summarize_stats
 
 
 class SelfAttentionQKVClassifier(Module):
     def __init__(self, n_features: int = 2, d_model: int = 16) -> None:
         super().__init__()
         self.d_model = d_model
-        # self.proj = Linear(n_features, d_model)
         self.q_proj = Linear(n_features, d_model)
         self.k_proj = Linear(n_features, d_model)
         self.v_proj = Linear(n_features, d_model)
         self.classifier = make_tanh_classifier_head(d_model)
 
     def forward(self, x_in: Tensor) -> Tensor:
-        # hidden = torch.tanh(self.proj(x_in))  # (N, T, d)
         q = torch.tanh(self.q_proj(x_in))  # (N, T, d)
         k = torch.tanh(self.k_proj(x_in))  # (N, T, d)
         v = torch.tanh(self.v_proj(x_in))  # (N, T, d)
@@ -47,6 +46,11 @@ class SelfAttentionQKVAccess(ModelAccess):
             lr_end=lr_end,
         )
 
-    def final_linear(self) -> Linear:  # type: ignore[override]
-        return self.backbone.classifier[2]  # type: ignore[attr-defined,index]
+    def final_linear(self) -> Linear:
+        return self.backbone.classifier[2]
 
+    def extra_metrics(self, x: Tensor) -> Dict[str, float]:
+        q = torch.tanh(self.backbone.q_proj(x))
+        k = torch.tanh(self.backbone.k_proj(x))
+        logits = torch.matmul(q, k.transpose(1, 2)) / (self.backbone.d_model ** 0.5)
+        return summarize_stats("attn_logits", logits)

@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Dict, Optional
 
 import torch
 from torch import Tensor, softmax, tanh
 from torch.nn import Linear, Module
 
 from .base import ModelAccess, make_tanh_classifier_head
+from .metrics import summarize_stats
 
 
 class AttentionPoolingClassifier(Module):
@@ -42,6 +43,11 @@ class AttentionAccess(ModelAccess):
             lr_end=lr_end,
         )
 
-    def final_linear(self) -> Linear:  # type: ignore[override]
+    def final_linear(self) -> Linear:
         # final linear is the last layer of the head Sequential
-        return self.backbone.classifier[2]  # type: ignore[attr-defined,index]
+        return self.backbone.classifier[2]
+
+    def extra_metrics(self, x: Tensor) -> Dict[str, float]:
+        hidden = tanh(self.backbone.proj(x))
+        scores = torch.mean(hidden, dim=2)
+        return summarize_stats("attn_logits", scores)

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Dict, Optional
 
+import torch
 from torch.nn import Linear, Module, Sequential, Tanh
 
 
@@ -42,6 +43,9 @@ class ModelAccess(ABC):
         self.lr_start = base
         self.lr_end = base if lr_end is None else float(lr_end)
 
+        # Initialize module weights
+        self._init_weights()
+
     def forward(self, x):  # passthrough to module
         return self.backbone(x)
 
@@ -49,3 +53,17 @@ class ModelAccess(ABC):
     def final_linear(self) -> Linear:
         raise NotImplementedError
 
+    def _init_weights(self) -> None:
+        """Apply Xavier initialization to Linear layers and zero biases.
+
+        This standardizes initialization across all models built on ModelAccess.
+        """
+        for m in self.backbone.modules():
+            if isinstance(m, Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    torch.nn.init.zeros_(m.bias)
+
+    # Extra scalar metrics derived from model internals; override in subclasses
+    def extra_metrics(self, x) -> Dict[str, float]:
+        return {}

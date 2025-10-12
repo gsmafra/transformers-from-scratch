@@ -84,27 +84,23 @@ def train_model(
             # Parameter norms
             weight_norm = float(final_linear.weight.detach().norm().item())
 
-        # Prepare optional distributions for logging at cadence
-        probs_np = None
-        logits_np = None
-        if (epoch % hist_every == 0 or epoch == model.epochs - 1):
-            with no_grad():
-                logits_batch = model.forward(x_flat).squeeze(-1)
-                probs_batch = sigmoid(logits_batch)
-                probs_np = probs_batch.detach().cpu().numpy()
-                logits_np = logits_batch.detach().cpu().numpy()
+        # Model-defined extra scalar metrics
+        extra = model.extra_metrics(x_flat)
+
+        metrics_payload: Dict[str, float] = {
+            "loss": float(loss.item()),
+            "accuracy": acc_epoch,
+            "grad_norm": grad_norm,
+            "weight_norm": weight_norm,
+            **(extra or {}),
+        }
 
         on_log(
             model.name,
             epoch,
-            {
-                "loss": float(loss.item()),
-                "accuracy": acc_epoch,
-                "grad_norm": grad_norm,
-                "weight_norm": weight_norm,
-            },
-            probs_np,
-            logits_np,
+            metrics_payload,
+            None,
+            None,
         )
 
         # Advance LR schedule for next epoch

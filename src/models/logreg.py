@@ -28,5 +28,5 @@ class LogRegAccess(ModelAccess):
             lr_end=lr_end,
         )
 
-    def final_linear(self) -> Linear:  # type: ignore[override]
-        return self.backbone[1]  # type: ignore[index]
+    def final_linear(self) -> Linear:
+        return self.backbone[1]
