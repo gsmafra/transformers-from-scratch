@@ -3,6 +3,8 @@ from typing import Dict, Optional
 
 import torch
 from torch.nn import Linear, Module, Sequential, Tanh
+from torch.optim import AdamW, Optimizer
+from torch.optim.lr_scheduler import LambdaLR, _LRScheduler
 
 
 def make_tanh_classifier_head(d_model: int) -> Sequential:
@@ -17,6 +19,20 @@ def make_tanh_classifier_head(d_model: int) -> Sequential:
       2: Linear(d_model, 1)  # final linear, useful for diagnostics
     """
     return Sequential(Linear(d_model, d_model), Tanh(), Linear(d_model, 1))
+
+
+class OptimizerBundle:
+    def __init__(self, optimizer: Optimizer, scheduler: _LRScheduler) -> None:
+        self.optimizer = optimizer
+        self.scheduler = scheduler
+
+    def zero_grad(self) -> None:
+        self.optimizer.zero_grad()
+
+    def step(self) -> None:
+        # Optimize, then advance LR schedule
+        self.optimizer.step()
+        self.scheduler.step()
 
 
 class ModelAccess(ABC):
@@ -67,3 +83,17 @@ class ModelAccess(ABC):
     # Extra scalar metrics derived from model internals; override in subclasses
     def extra_metrics(self, x) -> Dict[str, float]:
         return {}
+
+    # Factory: create bundled optimizer + scheduler
+    def make_optimizer(self) -> OptimizerBundle:
+        optimizer = AdamW(
+            self.backbone.parameters(),
+            lr=self.lr_start,
+            weight_decay=getattr(self, "weight_decay", 0.01),
+            betas=getattr(self, "betas", (0.9, 0.999)),
+            eps=getattr(self, "eps", 1e-8),
+        )
+        denom = max(self.epochs - 1, 1)
+        ratio = float(self.lr_end) / float(self.lr_start + 1e-12)
+        scheduler = LambdaLR(optimizer, lr_lambda=lambda ep: 1.0 + (ratio - 1.0) * (ep / denom))
+        return OptimizerBundle(optimizer, scheduler)

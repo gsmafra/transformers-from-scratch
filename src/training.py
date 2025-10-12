@@ -5,8 +5,6 @@ from tqdm import trange
 from torch import Tensor, no_grad, sigmoid
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import LambdaLR
 
 
 from .models import (
@@ -32,18 +30,7 @@ def train_model(
 
     backbone = model.backbone
     criterion = BCEWithLogitsLoss()
-    optimizer = AdamW(
-        backbone.parameters(),
-        lr=model.lr_start,
-        weight_decay=getattr(model, "weight_decay", 0.01),
-        betas=getattr(model, "betas", (0.9, 0.999)),
-        eps=getattr(model, "eps", 1e-8),
-    )
-
-    # Linear schedule from lr_start to lr_end across epochs using LambdaLR (multiplicative factors)
-    denom = max(model.epochs - 1, 1)
-    ratio = float(model.lr_end) / float(model.lr_start + 1e-12)
-    scheduler = LambdaLR(optimizer, lr_lambda=lambda ep: 1.0 + (ratio - 1.0) * (ep / denom))
+    optim = model.make_optimizer()
 
     loss_history = []
     # Each entry will be a list[float] for all parameters at that epoch
@@ -63,11 +50,11 @@ def train_model(
 
         loss_history.append(loss.item())
 
-        optimizer.zero_grad()
+        optim.zero_grad()
         loss.backward()
         # Gradient norm for diagnostics (no clipping when max_norm=inf)
         grad_norm = float(clip_grad_norm_(backbone.parameters(), max_norm=float("inf")).item())
-        optimizer.step()
+        optim.step()
 
         with no_grad():
             # Track full weight vector and bias scalar over time
@@ -102,9 +89,6 @@ def train_model(
             None,
             None,
         )
-
-        # Advance LR schedule for next epoch
-        scheduler.step()
 
     with no_grad():
         final_logits = model.forward(x_flat).squeeze(-1)
