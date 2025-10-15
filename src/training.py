@@ -27,17 +27,13 @@ def train_model(
 
     logger = TrainingLogger(run, model.name)
 
-    # Keep input dimensionality for models to learn from directly.
-    # Models are responsible for handling shapes; pass through as-is.
-    x_flat = x
-
     # Final linear for logging/diagnostics
     final_linear = model.final_linear()
 
     for epoch in trange(model.epochs, desc=f"train:{model.name}", leave=False):
         # Shuffle and iterate over mini-batches for this epoch
         batch_size = getattr(model, "mini_batch_size", None)
-        n = int(x_flat.size(0))
+        n = int(x.size(0))
         if not batch_size or batch_size <= 0:
             batch_size = n
 
@@ -47,7 +43,7 @@ def train_model(
         for start in range(0, n, batch_size):
             end = min(start + batch_size, n)
             idx = indices[start:end]
-            xb = x_flat[idx]
+            xb = x[idx]
             yb = y[idx]
 
             logits = model.forward(xb)
@@ -65,11 +61,11 @@ def train_model(
         optim.scheduler.step()
 
         # Model-defined extra scalar metrics
-        extra = model.extra_metrics(x_flat)
+        extra = model.extra_metrics(x)
         logger.end_epoch(epoch, extra_metrics=extra)
 
     with no_grad():
-        final_logits = model.forward(x_flat).squeeze(-1)
+        final_logits = model.forward(x).squeeze(-1)
         final_probabilities = sigmoid(final_logits)
         predicted_class = (final_logits > 0).long()
         accuracy = (predicted_class == y.long().squeeze(-1)).float().mean().item()
