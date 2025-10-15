@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional
 
 import torch
-from torch.nn import Linear, Module, Sequential, Tanh
+from torch.nn import BCEWithLogitsLoss, Linear, Module, Sequential, Tanh
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import LambdaLR, _LRScheduler
 
@@ -86,6 +86,10 @@ class ModelAccess(ABC):
     # Extra scalar metrics derived from model internals; override in subclasses
     def extra_metrics(self, x) -> Dict[str, float]:
         return {}
+
+    # Loss function factory; override per-model if needed
+    def make_loss(self):
+        return BCEWithLogitsLoss()
 
     # Factory: create bundled optimizer + scheduler
     def make_optimizer(self) -> OptimizerBundle:

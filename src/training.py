@@ -2,7 +2,6 @@ from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor, no_grad, sigmoid
-from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
 from tqdm import trange
 from wandb.sdk.wandb_run import Run as WandbRun
@@ -22,7 +21,7 @@ def train_model(
     """Train the model and return artifacts useful for reporting/analysis."""
 
     backbone = model.backbone
-    criterion = BCEWithLogitsLoss()
+    criterion = model.make_loss()
     optim = model.make_optimizer()
 
     logger = TrainingLogger(run, model.name)
