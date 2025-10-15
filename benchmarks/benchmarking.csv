@@ -24,8 +24,9 @@ temporal,single_digit_string_sum,0.564000,0.657355
 self_attention,single_digit_string_sum,0.954000,0.146181
 attention,single_digit_string_sum,0.952000,0.144073
 self_attention_qkv,single_digit_string_sum,0.907000,0.178623
-logreg,single_digit_string_sum_swapped,0.619000,0.756431
-temporal,single_digit_string_sum_swapped,0.584000,0.680220
-self_attention,single_digit_string_sum_swapped,0.919000,0.197462
-self_attention_qkv,single_digit_string_sum_swapped,0.963000,0.122545
-attention,single_digit_string_sum_swapped,0.965000,0.109564
+logreg,single_digit_string_sum_swapped,0.575000,0.734503
+temporal,single_digit_string_sum_swapped,0.601000,0.666818
+self_attention,single_digit_string_sum_swapped,0.968000,0.105853
+self_attention_qkv,single_digit_string_sum_swapped,0.963000,0.119721
+attention,single_digit_string_sum_swapped,0.968000,0.100517
+mlp,single_digit_string_sum_swapped,1.000000,0.000702
