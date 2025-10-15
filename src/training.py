@@ -1,21 +1,29 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
 
 import torch
 from torch import Tensor, no_grad, sigmoid
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
 from tqdm import trange
+from wandb.sdk.wandb_run import Run as WandbRun
 
 from .models import ModelAccess
 from .models.registry import build_models
 from .tasks import prepare_data
 
 
+def _log_epoch(run: WandbRun, model_name: str, epoch: int, metrics: Dict[str, float]) -> None:
+    merged = {f"{model_name}/step": epoch}
+    for key, value in (metrics or {}).items():
+        merged[f"{model_name}/metrics/{key}"] = value
+    run.log(merged)
+
+
 def train_model(
     model: ModelAccess,
     x: Tensor,
     y: Tensor,
-    on_log: Callable[[str, int, Dict[str, float], Any, Any], None],
+    run: WandbRun,
 ) -> Dict[str, Any]:
     """Train the model and return artifacts useful for reporting/analysis."""
 
@@ -107,13 +115,7 @@ def train_model(
             **(extra or {}),
         }
 
-        on_log(
-            model.name,
-            epoch,
-            metrics_payload,
-            None,
-            None,
-        )
+        _log_epoch(run, model.name, epoch, metrics_payload)
 
     with no_grad():
         final_logits = model.forward(x_flat).squeeze(-1)
@@ -143,7 +145,7 @@ def run_training(
     sequence_length: int,
     n_samples: int,
     seed: int,
-    on_log: Callable[[str, int, Dict[str, float], Any, Any], None],
+    run: WandbRun,
     *,
     task: Optional[str] = None,
 ) -> Dict[str, Dict[str, Any]]:
@@ -155,20 +157,12 @@ def run_training(
         task=task,
     )
 
-    # Align model input dims with generated data
-    n_features_eff = int(x.size(-1))
-
     # Build the suite of models to train this run
-    models = build_models(sequence_length=sequence_length, n_features=n_features_eff)
+    models = build_models(sequence_length=sequence_length, n_features=int(x.size(-1)))
 
     results: Dict[str, Dict[str, Any]] = {}
     for name, mdl in models.items():
-        artifacts = train_model(
-            model=mdl,
-            x=x,
-            y=y,
-            on_log=on_log,
-        )
+        artifacts = train_model(model=mdl, x=x, y=y, run=run)
         # Use wrapper name to key results to avoid mismatch
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
 

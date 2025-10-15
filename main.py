@@ -18,19 +18,11 @@ def main():
     model_names = ["logreg", "temporal", "self_attention", "self_attention_qkv", "attention"]
     run = init_wandb(project=project_name, model_names=model_names)
 
-    # Unified logger: metrics per model prefix
-    def log_all(model_name: str, epoch: int, metrics: dict, probs, logits):
-        merged = {f"{model_name}/step": epoch}
-        for key, value in (metrics or {}).items():
-            merged[f"{model_name}/metrics/{key}"] = value
-        # Single commit per epoch per model to keep steps tidy
-        run.log(merged)
-
     run_artifacts = run_training(
         sequence_length=SEQUENCE_LENGTH,
         n_samples=N_SAMPLES,
         seed=0,
-        on_log=log_all,
+        run=run,
         task=task,
     )
 
