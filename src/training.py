@@ -8,16 +8,9 @@ from tqdm import trange
 from wandb.sdk.wandb_run import Run as WandbRun
 
 from .models import ModelAccess
-from .epoch_aggregator import EpochAggregator
+from .training_logger import TrainingLogger
 from .models.registry import build_models
 from .tasks import prepare_data
-
-
-def _log_epoch(run: WandbRun, model_name: str, epoch: int, metrics: Dict[str, float]) -> None:
-    merged = {f"{model_name}/step": epoch}
-    for key, value in (metrics or {}).items():
-        merged[f"{model_name}/metrics/{key}"] = value
-    run.log(merged)
 
 
 def train_model(
@@ -32,10 +25,7 @@ def train_model(
     criterion = BCEWithLogitsLoss()
     optim = model.make_optimizer()
 
-    loss_history = []
-    # Each entry will be a list[float] for all parameters at that epoch
-    weight_history = []
-    bias_history = []
+    logger = TrainingLogger(run, model.name)
 
     # Keep input dimensionality for models to learn from directly.
     # Models are responsible for handling shapes; pass through as-is.
@@ -52,7 +42,7 @@ def train_model(
             batch_size = n
 
         indices = torch.randperm(n)
-        aggregator = EpochAggregator()
+        logger.start_epoch()
 
         for start in range(0, n, batch_size):
             end = min(start + batch_size, n)
@@ -69,23 +59,14 @@ def train_model(
             # Step optimizer per mini-batch
             optim.optimizer.step()
 
-            aggregator.update(logits=logits, yb=yb, loss=loss, grad_norm=grad_norm, final_linear=final_linear)
+            logger.update_batch(logits=logits, yb=yb, loss=loss, grad_norm=grad_norm, final_linear=final_linear)
 
         # Advance learning rate schedule once per epoch
         optim.scheduler.step()
 
-        metrics_payload: Dict[str, float] = aggregator.finalize()
-        loss_history.append(metrics_payload["loss"]) 
-        with no_grad():
-            w_avg = aggregator.average_weights()
-            b_avg = aggregator.average_bias()
-            weight_history.append(w_avg.view(-1).cpu().tolist())
-            bias_history.append(float(b_avg))
-
         # Model-defined extra scalar metrics
         extra = model.extra_metrics(x_flat)
-        metrics_payload.update(extra or {})
-        _log_epoch(run, model.name, epoch, metrics_payload)
+        logger.end_epoch(epoch, extra_metrics=extra)
 
     with no_grad():
         final_logits = model.forward(x_flat).squeeze(-1)
@@ -96,18 +77,19 @@ def train_model(
     w = final_linear.weight.detach()
     b = final_linear.bias.detach()
 
+    histories = logger.histories()
     return {
         "x": x.detach(),
         "y": y.detach(),
         "probabilities": final_probabilities.detach(),
         "predicted_class": predicted_class.detach(),
-        "loss_history": loss_history,
-        "weight_history": weight_history,
-        "bias_history": bias_history,
+        "loss_history": histories["loss_history"],
+        "weight_history": histories["weight_history"],
+        "bias_history": histories["bias_history"],
         "final_weight": w,
         "final_bias": b,
         "final_accuracy": accuracy,
-        "final_loss": loss_history[-1] if loss_history else None,
+        "final_loss": histories["loss_history"][-1] if histories["loss_history"] else None,
     }
 
 
