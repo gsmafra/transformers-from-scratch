@@ -55,7 +55,14 @@ def _format_number(x: float) -> str:
         return str(x)
 
 
-def _tensor_to_html_table(name: str, t: torch.Tensor, token_names: Optional[List[str]] = None) -> str:
+def _tensor_to_html_table(
+    name: str,
+    t: torch.Tensor,
+    token_names: Optional[List[str]] = None,
+    *,
+    row_labels: Optional[List[str]] = None,
+    col_labels: Optional[List[str]] = None,
+) -> str:
     t = t.detach().cpu()
     shape = list(t.shape)
     dim = t.dim()
@@ -72,14 +79,21 @@ def _tensor_to_html_table(name: str, t: torch.Tensor, token_names: Optional[List
         rows, cols = shape
         html_parts.append("<table class='tensor'>")
         # header
-        if token_names and cols == len(token_names) and ("proj" in name):
+        headers = None
+        if col_labels is not None and len(col_labels) == cols:
+            headers = col_labels
+        elif token_names and cols == len(token_names) and ("proj" in name):
             headers = token_names
-        else:
+        if headers is None:
             headers = [f"c{i}" for i in range(cols)]
-        html_parts.append("<tr><th></th>" + "".join(f"<th>{escape(h)}</th>" for h in headers) + "</tr>")
+        html_parts.append("<tr><th></th>" + "".join(f"<th>{escape(str(h))}</th>" for h in headers) + "</tr>")
         data = t.tolist()
         for r in range(rows):
-            html_parts.append("<tr><th>r{}</th>".format(r) + "".join(f"<td>{_format_number(val)}</td>" for val in data[r]) + "</tr>")
+            if row_labels is not None and len(row_labels) == rows:
+                row_name = str(row_labels[r])
+            else:
+                row_name = f"r{r}"
+            html_parts.append(f"<tr><th>{escape(row_name)}</th>" + "".join(f"<td>{_format_number(val)}</td>" for val in data[r]) + "</tr>")
         html_parts.append("</table>")
     else:
         # For higher dims, show the first dimension slices
@@ -88,6 +102,36 @@ def _tensor_to_html_table(name: str, t: torch.Tensor, token_names: Optional[List
             html_parts.append(f"<h4>slice {i} along dim0</h4>")
             html_parts.append(_tensor_to_html_table(f"{name}[{i}]", t[i], token_names=token_names).replace("<h3", "<h5").replace("</h3>", "</h5>"))
     return "\n".join(html_parts)
+
+
+def _compute_vocab_self_attention(model: ModelAccess, token_names: Optional[List[str]]) -> Optional[torch.Tensor]:
+    if not token_names:
+        return None
+    V = len(token_names)
+    name = getattr(model, "name", "")
+    bb = model.backbone
+    with torch.no_grad():
+        if name == "self_attention" and hasattr(bb, "proj") and hasattr(bb, "d_model"):
+            # E: (V, d)
+            W = bb.proj.weight.detach().cpu()  # (d, V)
+            b = bb.proj.bias.detach().cpu()  # (d)
+            E = torch.tanh(W.T + b)  # (V, d)
+            scale = float(bb.d_model) ** 0.5
+            logits = (E @ E.T) / scale  # (V, V)
+            attn = torch.softmax(logits, dim=1)
+            return attn
+        if name == "self_attention_qkv" and hasattr(bb, "q_proj") and hasattr(bb, "k_proj") and hasattr(bb, "d_model"):
+            Wq = bb.q_proj.weight.detach().cpu()  # (d, V)
+            bq = bb.q_proj.bias.detach().cpu()
+            Wk = bb.k_proj.weight.detach().cpu()
+            bk = bb.k_proj.bias.detach().cpu()
+            Q = torch.tanh(Wq.T + bq)  # (V, d)
+            K = torch.tanh(Wk.T + bk)  # (V, d)
+            scale = float(bb.d_model) ** 0.5
+            logits = (Q @ K.T) / scale  # (V, V)
+            attn = torch.softmax(logits, dim=1)
+            return attn
+    return None
 
 
 def export_model_readable_html(model: ModelAccess, dir_path: str, token_names: Optional[List[str]] = None) -> str:
@@ -148,6 +192,19 @@ def export_model_readable_html(model: ModelAccess, dir_path: str, token_names: O
     for name, tensor in model.backbone.state_dict().items():
         html.append(_tensor_to_html_table(name, tensor, token_names=token_names))
     html.append("</div>")
+
+    # Vocabulary self-attention (for attention models)
+    attn = _compute_vocab_self_attention(model, token_names)
+    if attn is not None:
+        html.append("<div class='section'>")
+        html.append("<h2>Vocabulary Self-Attention</h2>")
+        html.append(_tensor_to_html_table(
+            "attn[vocab→vocab] (softmax over columns)",
+            attn,
+            row_labels=token_names,
+            col_labels=token_names,
+        ))
+        html.append("</div>")
 
     html.append("</body></html>")
 
