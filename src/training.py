@@ -8,6 +8,7 @@ from tqdm import trange
 from wandb.sdk.wandb_run import Run as WandbRun
 
 from .models import ModelAccess
+from .epoch_aggregator import EpochAggregator
 from .models.registry import build_models
 from .tasks import prepare_data
 
@@ -51,14 +52,7 @@ def train_model(
             batch_size = n
 
         indices = torch.randperm(n)
-        total_loss = 0.0
-        total_correct = 0
-        total_count = 0
-        grad_norm_sum = 0.0
-        num_batches = 0
-        weight_sum = None
-        bias_sum = 0.0
-        weight_norm_sum = 0.0
+        aggregator = EpochAggregator()
 
         for start in range(0, n, batch_size):
             end = min(start + batch_size, n)
@@ -75,46 +69,22 @@ def train_model(
             # Step optimizer per mini-batch
             optim.optimizer.step()
 
-            with no_grad():
-                preds = (logits.detach().squeeze(-1) > 0).long()
-                total_correct += int((preds == yb.long()).sum().item())
-                total_count += int(yb.numel())
-                total_loss += float(loss.item()) * int(yb.numel())
-                grad_norm_sum += grad_norm
-                num_batches += 1
-                # Accumulate weights/bias and weight norm for epoch-mean summaries
-                base_w = final_linear.weight.detach()
-                weight_sum = base_w.clone() if weight_sum is None else weight_sum + base_w
-                base_b = final_linear.bias.detach()
-                bias_sum += float(base_b.view(-1)[0])
-                weight_norm_sum += float(base_w.norm().item())
+            aggregator.update(logits=logits, yb=yb, loss=loss, grad_norm=grad_norm, final_linear=final_linear)
 
         # Advance learning rate schedule once per epoch
         optim.scheduler.step()
 
-        loss_epoch = total_loss / max(total_count, 1)
-        acc_epoch = float(total_correct) / max(total_count, 1)
-        loss_history.append(loss_epoch)
-
+        metrics_payload: Dict[str, float] = aggregator.finalize()
+        loss_history.append(metrics_payload["loss"]) 
         with no_grad():
-            w_avg = (weight_sum / float(num_batches)).detach()
+            w_avg = aggregator.average_weights()
+            b_avg = aggregator.average_bias()
             weight_history.append(w_avg.view(-1).cpu().tolist())
-            b_avg = bias_sum / float(num_batches)
             bias_history.append(float(b_avg))
-            # Parameter norm averaged over epoch
-            weight_norm = float(weight_norm_sum / float(num_batches))
 
         # Model-defined extra scalar metrics
         extra = model.extra_metrics(x_flat)
-
-        metrics_payload: Dict[str, float] = {
-            "loss": float(loss_epoch),
-            "accuracy": acc_epoch,
-            "grad_norm": float(grad_norm_sum / float(max(num_batches, 1))),
-            "weight_norm": weight_norm,
-            **(extra or {}),
-        }
-
+        metrics_payload.update(extra or {})
         _log_epoch(run, model.name, epoch, metrics_payload)
 
     with no_grad():
