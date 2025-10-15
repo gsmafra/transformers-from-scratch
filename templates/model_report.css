@@ -1,0 +1,21 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #0f1620;
+  --text: #e6edf3;
+  --muted: #9aa4b2;
+  --border: #253244;
+  --header: #17212b;
+  --accent: #64b5f6;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 20px; }
+h1 { margin-bottom: 0; }
+h2, h3, h4, h5 { color: var(--text); }
+.subtle { color: var(--muted); }
+pre { background: var(--panel); color: var(--text); padding: 12px; border-radius: 6px; overflow: auto; border: 1px solid var(--border); }
+a { color: var(--accent); }
+table.tensor, .param-table { border-collapse: collapse; margin: 12px 0; font-size: 12px; width: auto; }
+table.tensor th, table.tensor td, .param-table th, .param-table td { border: 1px solid var(--border); padding: 4px 6px; }
+table.tensor th, .param-table th { background: var(--header); color: var(--text); position: sticky; top: 0; }
+table.tensor td, .param-table td { background: var(--panel); color: var(--text); }
+.section { margin-top: 24px; }

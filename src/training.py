@@ -1,18 +1,18 @@
+import os
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import torch
 from torch import Tensor, no_grad, sigmoid
 from torch.nn.utils import clip_grad_norm_
 from tqdm import trange
-if TYPE_CHECKING:
-    from wandb.sdk.wandb_run import Run as WandbRun  # type: ignore
-else:
-    WandbRun = Any  # type: ignore
+from wandb.sdk.wandb_run import Run as WandbRun
 
+from .export import export_model_definition, export_model_weights, export_model_readable_html
 from .models import ModelAccess
-from .training_logger import TrainingLogger
 from .models.registry import build_models
 from .tasks import prepare_data
+from .tasks.arithmetic_common import TOKENS as ARITH_TOKENS
+from .training_logger import TrainingLogger
 
 
 def train_model(
@@ -75,6 +75,12 @@ def train_model(
     w = final_linear.weight.detach()
     b = final_linear.bias.detach()
 
+    # Export readable artifacts for the trained model
+    out_dir = os.path.join("artifacts", "models")
+    arch_path = export_model_definition(model, out_dir)
+    weights_path = export_model_weights(model, out_dir)
+    html_path = export_model_readable_html(model, out_dir, token_names=list(ARITH_TOKENS))
+
     histories = logger.histories()
     return {
         "x": x.detach(),
@@ -88,6 +94,9 @@ def train_model(
         "final_bias": b,
         "final_accuracy": accuracy,
         "final_loss": histories["loss_history"][-1] if histories["loss_history"] else None,
+        "model_arch_path": arch_path,
+        "model_weights_path": weights_path,
+        "model_html_path": html_path,
     }
 
 
