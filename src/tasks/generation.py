@@ -7,7 +7,7 @@ from .sampling import stratified_sample_balanced
 
 
 # Set which task the code points to by default
-DEFAULT_TASK = "single_digit_string_sum"
+DEFAULT_TASK = "single_digit_string_sum_swapped"
 
 
 def prepare_data(

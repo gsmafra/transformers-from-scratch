@@ -3,6 +3,7 @@ from .has_all_tokens import HasAllTokensTask
 from .has_pos_and_neg import HasPosAndNegTask
 from .sign_of_second_place import SignOfSecondPlaceTask
 from .single_digit_string_sum import SingleDigitStringSumTask
+from .single_digit_string_sum_swapped import SingleDigitStringSumSwappedTask
 from .sign_of_winner import SignOfWinnerTask
 
 
@@ -16,6 +17,7 @@ TASK_REGISTRY = {
     "has_all_tokens": HasAllTokensTask(),
     "any_abs_gt_one": AnyAbsGreaterThanOneTask(),
     "single_digit_string_sum": SingleDigitStringSumTask(),
+    "single_digit_string_sum_swapped": SingleDigitStringSumSwappedTask(),
 }
 
 __all__ = ["TASK_REGISTRY"]

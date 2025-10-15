@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List, Tuple
 
 import torch
 from torch import Tensor
@@ -6,14 +6,14 @@ from torch import Tensor
 from .base import Task
 from .arithmetic_common import (
     TOKENS as _TOKENS,
-    TOK2IDX as _TOK2IDX,
     FORM_A_PLUS_B_EQ_C,
+    FORM_A_EQ_B_PLUS_C,
     label_equations_from_indices,
     generate_candidates_equations,
 )
 
 
-class SingleDigitStringSumTask(Task):
+class SingleDigitStringSumSwappedTask(Task):
     feature_dim: int = len(_TOKENS)
 
     def label(self, x: Tensor) -> Tensor:
@@ -21,12 +21,14 @@ class SingleDigitStringSumTask(Task):
             raise ValueError("Expected shape (N, 5, V>=12) with one-hot tokens")
 
         idx = x.argmax(dim=2)  # (N, 5)
-        return label_equations_from_indices(idx, [FORM_A_PLUS_B_EQ_C])
+        return label_equations_from_indices(idx, [FORM_A_PLUS_B_EQ_C, FORM_A_EQ_B_PLUS_C])
 
     def generate_candidates(self, n: int, T: int) -> Tuple[Tensor, Tensor]:
-        """Generate pairs: for each random (a,b) with a+b <= 9, emit one correct and one incorrect sample.
+        """Generate a balanced set of positives/negatives for both op orders.
 
-        If a+b > 9, discard that pair (emit nothing). Truncate to n after shuffling.
+        Forms:
+          - a + b = c (with a+b <= 9)
+          - a = b + c (with b+c <= 9)
         Output one-hot tokens with shape (N, 5, self.feature_dim).
         """
-        return generate_candidates_equations(n, T, [FORM_A_PLUS_B_EQ_C])
+        return generate_candidates_equations(n, T, [FORM_A_PLUS_B_EQ_C, FORM_A_EQ_B_PLUS_C])
