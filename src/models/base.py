@@ -41,6 +41,7 @@ class ModelAccess(ABC):
     epochs: int
     lr_start: float
     lr_end: float
+    mini_batch_size: int
 
     def __init__(
         self,
@@ -50,6 +51,7 @@ class ModelAccess(ABC):
         epochs: int,
         lr_start: Optional[float] = None,
         lr_end: Optional[float] = None,
+        mini_batch_size: int = 128,
     ) -> None:
         self.name = name
         self.backbone = backbone
@@ -58,6 +60,7 @@ class ModelAccess(ABC):
         base = 0.1 if lr_start is None else float(lr_start)
         self.lr_start = base
         self.lr_end = base if lr_end is None else float(lr_end)
+        self.mini_batch_size = mini_batch_size
 
         # Initialize module weights
         self._init_weights()

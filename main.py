@@ -1,5 +1,3 @@
-import wandb
-
 from src.benchmarking.csv import update_benchmark_csv
 from src.benchmarking.html import generate_benchmark_html
 from src.report import generate_run_report
@@ -33,7 +31,6 @@ def main():
         n_samples=N_SAMPLES,
         seed=0,
         on_log=log_all,
-        hist_every=10,
         task=task,
     )
 

@@ -32,6 +32,7 @@ class TemporalAccess(ModelAccess):
         epochs: int = 1000,
         lr_start: Optional[float] = 1.0,
         lr_end: Optional[float] = None,
+        mini_batch_size: Optional[int] = None,
     ) -> None:
         super().__init__(
             name="temporal",
@@ -39,6 +40,7 @@ class TemporalAccess(ModelAccess):
             epochs=epochs,
             lr_start=lr_start,
             lr_end=lr_end,
+            mini_batch_size=mini_batch_size,
         )
 
     def final_linear(self) -> Linear:

@@ -37,6 +37,7 @@ class SelfAttentionQKVAccess(ModelAccess):
         d_model: int = 16,
         lr_start: Optional[float] = 0.4,
         lr_end: Optional[float] = 0.2,
+        mini_batch_size: Optional[int] = None,
     ) -> None:
         super().__init__(
             name="self_attention_qkv",
@@ -44,6 +45,7 @@ class SelfAttentionQKVAccess(ModelAccess):
             epochs=epochs,
             lr_start=lr_start,
             lr_end=lr_end,
+            mini_batch_size=mini_batch_size,
         )
 
     def final_linear(self) -> Linear:

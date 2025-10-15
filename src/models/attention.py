@@ -34,6 +34,7 @@ class AttentionAccess(ModelAccess):
         d_model: int = 16,
         lr_start: Optional[float] = 0.5,
         lr_end: Optional[float] = 0.1,
+        mini_batch_size: Optional[int] = None,
     ) -> None:
         super().__init__(
             name="attention",
@@ -41,6 +42,7 @@ class AttentionAccess(ModelAccess):
             epochs=epochs,
             lr_start=lr_start,
             lr_end=lr_end,
+            mini_batch_size=mini_batch_size,
         )
 
     def final_linear(self) -> Linear:

@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Optional
 
+import torch
 from torch import Tensor, no_grad, sigmoid
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.utils import clip_grad_norm_
@@ -35,39 +36,73 @@ def train_model(
     final_linear = model.final_linear()
 
     for epoch in trange(model.epochs, desc=f"train:{model.name}", leave=False):
-        logits = model.forward(x_flat)  # raw logits
-        loss = criterion(logits.squeeze(-1), y)
+        # Shuffle and iterate over mini-batches for this epoch
+        batch_size = getattr(model, "mini_batch_size", None)
+        n = int(x_flat.size(0))
+        if not batch_size or batch_size <= 0:
+            batch_size = n
 
-        loss_history.append(loss.item())
+        indices = torch.randperm(n)
+        total_loss = 0.0
+        total_correct = 0
+        total_count = 0
+        grad_norm_sum = 0.0
+        num_batches = 0
+        weight_sum = None
+        bias_sum = 0.0
+        weight_norm_sum = 0.0
 
-        optim.zero_grad()
-        loss.backward()
-        # Gradient norm for diagnostics (no clipping when max_norm=inf)
-        grad_norm = float(clip_grad_norm_(backbone.parameters(), max_norm=float("inf")).item())
-        optim.step()
+        for start in range(0, n, batch_size):
+            end = min(start + batch_size, n)
+            idx = indices[start:end]
+            xb = x_flat[idx]
+            yb = y[idx]
+
+            logits = model.forward(xb)
+            loss = criterion(logits.squeeze(-1), yb)
+
+            optim.zero_grad()
+            loss.backward()
+            grad_norm = float(clip_grad_norm_(backbone.parameters(), max_norm=float("inf")).item())
+            # Step optimizer per mini-batch
+            optim.optimizer.step()
+
+            with no_grad():
+                preds = (logits.detach().squeeze(-1) > 0).long()
+                total_correct += int((preds == yb.long()).sum().item())
+                total_count += int(yb.numel())
+                total_loss += float(loss.item()) * int(yb.numel())
+                grad_norm_sum += grad_norm
+                num_batches += 1
+                # Accumulate weights/bias and weight norm for epoch-mean summaries
+                base_w = final_linear.weight.detach()
+                weight_sum = base_w.clone() if weight_sum is None else weight_sum + base_w
+                base_b = final_linear.bias.detach()
+                bias_sum += float(base_b.view(-1)[0])
+                weight_norm_sum += float(base_w.norm().item())
+
+        # Advance learning rate schedule once per epoch
+        optim.scheduler.step()
+
+        loss_epoch = total_loss / max(total_count, 1)
+        acc_epoch = float(total_correct) / max(total_count, 1)
+        loss_history.append(loss_epoch)
 
         with no_grad():
-            # Track full weight vector and bias scalar over time
-            base_w = final_linear.weight.detach()
-            weight_history.append(base_w.view(-1).cpu().tolist())
-            base_b = final_linear.bias.detach()
-            bias_history.append(float(base_b.view(-1)[0]))
-
-            # Accuracy this epoch
-            logits_epoch = logits.detach().squeeze(-1)
-            preds_epoch = (logits_epoch > 0).long()
-            acc_epoch = (preds_epoch == y.long()).float().mean().item()
-
-            # Parameter norms
-            weight_norm = float(final_linear.weight.detach().norm().item())
+            w_avg = (weight_sum / float(num_batches)).detach()
+            weight_history.append(w_avg.view(-1).cpu().tolist())
+            b_avg = bias_sum / float(num_batches)
+            bias_history.append(float(b_avg))
+            # Parameter norm averaged over epoch
+            weight_norm = float(weight_norm_sum / float(num_batches))
 
         # Model-defined extra scalar metrics
         extra = model.extra_metrics(x_flat)
 
         metrics_payload: Dict[str, float] = {
-            "loss": float(loss.item()),
+            "loss": float(loss_epoch),
             "accuracy": acc_epoch,
-            "grad_norm": grad_norm,
+            "grad_norm": float(grad_norm_sum / float(max(num_batches, 1))),
             "weight_norm": weight_norm,
             **(extra or {}),
         }
