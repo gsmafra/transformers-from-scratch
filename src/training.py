@@ -1,10 +1,13 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import torch
 from torch import Tensor, no_grad, sigmoid
 from torch.nn.utils import clip_grad_norm_
 from tqdm import trange
-from wandb.sdk.wandb_run import Run as WandbRun
+if TYPE_CHECKING:
+    from wandb.sdk.wandb_run import Run as WandbRun  # type: ignore
+else:
+    WandbRun = Any  # type: ignore
 
 from .models import ModelAccess
 from .training_logger import TrainingLogger

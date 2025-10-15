@@ -24,23 +24,14 @@ def build_model(sequence_length: int, n_features: int) -> Module:
 
 
 class TemporalAccess(ModelAccess):
-    def __init__(
-        self,
-        sequence_length: int,
-        n_features: int = 2,
-        *,
-        epochs: int = 1000,
-        lr_start: Optional[float] = 1.0,
-        lr_end: Optional[float] = None,
-        mini_batch_size: Optional[int] = None,
-    ) -> None:
+    LR_START = 1.0
+
+    def __init__(self, sequence_length: int, n_features: int) -> None:
         super().__init__(
             name="temporal",
             backbone=build_model(sequence_length, n_features),
-            epochs=epochs,
-            lr_start=lr_start,
-            lr_end=lr_end,
-            mini_batch_size=mini_batch_size,
+            lr_start=self.LR_START,
+            lr_end=None,  # constant LR
         )
 
     def final_linear(self) -> Linear:

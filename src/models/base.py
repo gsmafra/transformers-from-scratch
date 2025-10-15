@@ -35,6 +35,10 @@ class OptimizerBundle:
         self.scheduler.step()
 
 
+DEFAULT_MINI_BATCH_SIZE = 128
+DEFAULT_EPOCHS = 1000
+
+
 class ModelAccess(ABC):
     name: str
     backbone: Module
@@ -48,19 +52,21 @@ class ModelAccess(ABC):
         name: str,
         backbone: Module,
         *,
-        epochs: int,
+        epochs: Optional[int] = None,
         lr_start: Optional[float] = None,
         lr_end: Optional[float] = None,
-        mini_batch_size: int = 128,
+        mini_batch_size: Optional[int] = None,
     ) -> None:
         self.name = name
         self.backbone = backbone
-        self.epochs = epochs
+        self.epochs = int(epochs) if epochs is not None else DEFAULT_EPOCHS
         # Coalesce schedule to valid floats
         base = 0.1 if lr_start is None else float(lr_start)
         self.lr_start = base
         self.lr_end = base if lr_end is None else float(lr_end)
-        self.mini_batch_size = mini_batch_size
+        self.mini_batch_size = (
+            int(mini_batch_size) if mini_batch_size is not None else DEFAULT_MINI_BATCH_SIZE
+        )
 
         # Initialize module weights
         self._init_weights()

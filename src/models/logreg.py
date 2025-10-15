@@ -11,23 +11,14 @@ def build_logreg(sequence_length: int, n_features: int) -> Module:
 
 
 class LogRegAccess(ModelAccess):
-    def __init__(
-        self,
-        sequence_length: int,
-        n_features: int = 2,
-        *,
-        epochs: int = 1000,
-        lr_start: Optional[float] = 1.0,
-        lr_end: Optional[float] = None,
-        mini_batch_size: Optional[int] = None,
-    ) -> None:
+    LR_START = 1.0
+
+    def __init__(self, sequence_length: int, n_features: int) -> None:
         super().__init__(
             name="logreg",
             backbone=build_logreg(sequence_length, n_features),
-            epochs=epochs,
-            lr_start=lr_start,
-            lr_end=lr_end,
-            mini_batch_size=mini_batch_size,
+            lr_start=self.LR_START,
+            lr_end=None,  # use parent's default to keep constant LR
         )
 
     def final_linear(self) -> Linear:

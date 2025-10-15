@@ -26,23 +26,16 @@ class SimpleSelfAttentionClassifier(Module):
 
 
 class SelfAttentionAccess(ModelAccess):
-    def __init__(
-        self,
-        n_features: int = 2,
-        *,
-        epochs: int = 1000,
-        d_model: int = 16,
-        lr_start: Optional[float] = 0.4,
-        lr_end: Optional[float] = 0.2,
-        mini_batch_size: Optional[int] = None,
-    ) -> None:
+    D_MODEL = 16
+    LR_START = 0.4
+    LR_END = 0.2
+
+    def __init__(self, n_features: int) -> None:
         super().__init__(
             name="self_attention",
-            backbone=SimpleSelfAttentionClassifier(n_features=n_features, d_model=d_model),
-            epochs=epochs,
-            lr_start=lr_start,
-            lr_end=lr_end,
-            mini_batch_size=mini_batch_size,
+            backbone=SimpleSelfAttentionClassifier(n_features=n_features, d_model=self.D_MODEL),
+            lr_start=self.LR_START,
+            lr_end=self.LR_END,
         )
 
     def final_linear(self) -> Linear:
