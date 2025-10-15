@@ -1,9 +1,7 @@
 from typing import Tuple
 
-import torch
 from torch import Tensor
 
-from .base import Task
 from .arithmetic_common import (
     TOKENS as _TOKENS,
     TOK2IDX as _TOK2IDX,
@@ -11,6 +9,7 @@ from .arithmetic_common import (
     label_equations_from_indices,
     generate_candidates_equations,
 )
+from .base import Task
 
 
 class SingleDigitStringSumTask(Task):
