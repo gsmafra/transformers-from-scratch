@@ -60,3 +60,4 @@ class EpochAggregator:
     def average_bias(self) -> float:
         batches = max(self.num_batches, 1)
         return float(self._bias_sum) / float(batches)
+

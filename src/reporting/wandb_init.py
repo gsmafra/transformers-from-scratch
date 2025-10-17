@@ -21,3 +21,4 @@ def init_wandb(project: str, model_names: Iterable[str]) -> "wandb.sdk.wandb_run
         wandb.define_metric(f"{name}/distributions/*", step_metric=f"{name}/step")
 
     return run
+

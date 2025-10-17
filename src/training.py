@@ -7,12 +7,12 @@ from torch.nn.utils import clip_grad_norm_
 from tqdm import trange
 from wandb.sdk.wandb_run import Run as WandbRun
 
-from .export import export_model_definition, export_model_weights, export_model_readable_html
+from .reporting.export import export_model_definition, export_model_weights, export_model_readable_html
 from .models import ModelAccess
 from .models.registry import build_models
 from .tasks import prepare_data
 from .tasks.arithmetic_common import TOKENS as ARITH_TOKENS
-from .training_logger import TrainingLogger
+from .reporting.training_logger import TrainingLogger
 
 
 def train_model(

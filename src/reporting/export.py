@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 import torch
 
-from .models.base import ModelAccess
+from ..models.base import ModelAccess
 
 
 def _ensure_dir(path: str) -> None:
