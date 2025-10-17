@@ -79,7 +79,15 @@ def train_model(
     out_dir = os.path.join("artifacts", "models")
     arch_path = export_model_definition(model, out_dir)
     weights_path = export_model_weights(model, out_dir)
-    html_path = export_model_readable_html(model, out_dir, token_names=list(ARITH_TOKENS))
+    html_path = export_model_readable_html(
+        model,
+        out_dir,
+        token_names=list(ARITH_TOKENS),
+        x=x,
+        y=y,
+        probabilities=final_probabilities,
+        max_wrong=20,
+    )
 
     histories = logger.histories()
     return {
