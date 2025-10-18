@@ -7,7 +7,7 @@ from torch.nn.utils import clip_grad_norm_
 from tqdm import trange
 from wandb.sdk.wandb_run import Run as WandbRun
 
-from .reporting.export import export_model_definition, export_model_weights, export_model_readable_html
+from .reporting.export import export_model_readable_html
 from .models import ModelAccess
 from .models.registry import build_models
 from .tasks import prepare_data
@@ -77,15 +77,13 @@ def train_model(
 
     # Export readable artifacts for the trained model
     out_dir = os.path.join("artifacts", "models")
-    arch_path = export_model_definition(model, out_dir)
-    weights_path = export_model_weights(model, out_dir)
     html_path = export_model_readable_html(
         model,
         out_dir,
+        x,
+        y,
+        final_probabilities,
         token_names=list(ARITH_TOKENS),
-        x=x,
-        y=y,
-        probabilities=final_probabilities,
         max_wrong=20,
     )
 
@@ -102,8 +100,6 @@ def train_model(
         "final_bias": b,
         "final_accuracy": accuracy,
         "final_loss": histories["loss_history"][-1] if histories["loss_history"] else None,
-        "model_arch_path": arch_path,
-        "model_weights_path": weights_path,
         "model_html_path": html_path,
     }
 

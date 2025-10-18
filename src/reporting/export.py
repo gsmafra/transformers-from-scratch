@@ -1,115 +1,24 @@
-import json
 import os
 from html import escape
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import torch
 
 from ..models.base import ModelAccess
+from .attention_viz import render_vocab_attention_section
+from .misclassification import render_misclassified_examples
 
 
-def _one_hot_to_token_str(sample: torch.Tensor, token_names: Optional[List[str]]) -> str:
-    """Convert a one-hot sequence (T, V) into a space-separated token string.
-
-    If `token_names` are provided and match the vocabulary, they are used.
-    Otherwise falls back to integer indices.
-    """
-    idx = sample.argmax(dim=-1).tolist()
-    if token_names and len(token_names) >= sample.size(-1):
-        toks = [str(token_names[i]) for i in idx]
-    else:
-        toks = [str(i) for i in idx]
-    return " ".join(toks)
-
-
-def _render_misclassified_examples(
-    *,
-    x: Optional[torch.Tensor],
-    y: Optional[torch.Tensor],
-    probabilities: Optional[torch.Tensor],
-    token_names: Optional[List[str]],
-    max_wrong: int,
-) -> str:
-    """Return an HTML section showing a sample of misclassified examples.
-
-    Returns an empty string if inputs are missing or no misclassifications exist.
-    """
-    if x is None or y is None or probabilities is None:
-        return ""
-    x_cpu = x.detach().cpu()
-    y_cpu = y.detach().cpu().reshape(-1).long()
-    p_cpu = probabilities.detach().cpu().reshape(-1)
-    preds = (p_cpu > 0.5).long()
-    wrong_mask = preds.ne(y_cpu)
-    wrong_indices = torch.nonzero(wrong_mask, as_tuple=False).reshape(-1).tolist()
-    if not wrong_indices:
-        return ""
-
-    parts: List[str] = []
-    parts.append("<div class='section'>")
-    parts.append("<h2>Misclassified Examples</h2>")
-    parts.append("<p class='subtle'>Sample of inputs the model got wrong at the end of training.</p>")
-    parts.append("<table class='tensor'>")
-    parts.append("<tr><th>#</th><th>Input</th><th>y_true</th><th>p(class=1)</th><th>pred</th></tr>")
-    seen = set()
-    rows = []
-    for i in wrong_indices:
-        seq_idx = tuple(x_cpu[i].argmax(dim=-1).tolist())
-        if seq_idx in seen:
-            continue
-        seen.add(seq_idx)
-        seq_str = _one_hot_to_token_str(x_cpu[i], token_names)
-        yv = int(y_cpu[i].item())
-        pv = float(p_cpu[i].item())
-        pr = int(preds[i].item())
-        rows.append((seq_idx, i, seq_str, yv, pv, pr))
-    rows.sort(key=lambda r: r[0])
-    for _, i, seq_str, yv, pv, pr in rows[:max_wrong]:
-        parts.append(
-            f"<tr><td>{i}</td><td>{escape(seq_str)}</td><td>{yv}</td><td>{_format_number(pv)}</td><td>{pr}</td></tr>"
-        )
-    parts.append("</table>")
-    parts.append("</div>")
-    return "\n".join(parts)
+def _load_css() -> str:
+    repo_root = os.path.dirname(os.path.dirname(__file__))
+    css_path = os.path.join(repo_root, "templates", "model_report.css")
+    with open(css_path, "r", encoding="utf-8") as cf:
+        css = cf.read()
+    return f"<style>\n{css}\n</style>"
 
 
 def _ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
-
-
-def export_model_definition(model: ModelAccess, dir_path: str) -> str:
-    """Write a readable text file describing the model architecture.
-
-    Returns the file path written.
-    """
-    _ensure_dir(dir_path)
-    path = os.path.join(dir_path, f"{model.name}_architecture.txt")
-    # Use the module's string representation for a concise, readable structure
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(repr(model.backbone))
-        f.write("\n\n")
-        # Add parameter counts by name
-        total_params = 0
-        for name, param in model.backbone.named_parameters():
-            numel = param.numel()
-            total_params += numel
-            f.write(f"{name}: shape={tuple(param.shape)} numel={numel}\n")
-        f.write(f"\nTotal parameters: {total_params}\n")
-    return path
-
-
-def export_model_weights(model: ModelAccess, dir_path: str) -> str:
-    """Write all model weights to JSON for readability.
-
-    Returns the file path written.
-    """
-    _ensure_dir(dir_path)
-    path = os.path.join(dir_path, f"{model.name}_weights.json")
-    state: Dict[str, torch.Tensor] = model.backbone.state_dict()
-    serializable = {k: v.detach().cpu().tolist() for k, v in state.items()}
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(serializable, f)
-    return path
 
 
 def _format_number(x: float) -> str:
@@ -169,70 +78,19 @@ def _tensor_to_html_table(
     return "\n".join(html_parts)
 
 
-def _compute_vocab_self_attention(model: ModelAccess, token_names: Optional[List[str]]) -> Optional[torch.Tensor]:
-    if not token_names:
-        return None
-    V = len(token_names)
-    name = getattr(model, "name", "")
-    bb = model.backbone
-    with torch.no_grad():
-        if name == "self_attention" and hasattr(bb, "proj") and hasattr(bb, "d_model"):
-            # E: (V, d)
-            W = bb.proj.weight.detach().cpu()  # (d, V)
-            b = bb.proj.bias.detach().cpu()  # (d)
-            E = torch.tanh(W.T + b)  # (V, d)
-            scale = float(bb.d_model) ** 0.5
-            logits = (E @ E.T) / scale  # (V, V)
-            attn = torch.softmax(logits, dim=1)
-            return attn
-        if name == "self_attention_qkv" and hasattr(bb, "q_proj") and hasattr(bb, "k_proj") and hasattr(bb, "d_model"):
-            Wq = bb.q_proj.weight.detach().cpu()  # (d, V)
-            bq = bb.q_proj.bias.detach().cpu()
-            Wk = bb.k_proj.weight.detach().cpu()
-            bk = bb.k_proj.bias.detach().cpu()
-            Q = torch.tanh(Wq.T + bq)  # (V, d)
-            K = torch.tanh(Wk.T + bk)  # (V, d)
-            scale = float(bb.d_model) ** 0.5
-            logits = (Q @ K.T) / scale  # (V, V)
-            attn = torch.softmax(logits, dim=1)
-            return attn
-    return None
-
-
-def export_model_readable_html(
+def build_model_readable_html(
     model: ModelAccess,
-    dir_path: str,
+    x: torch.Tensor,
+    y: torch.Tensor,
+    probabilities: torch.Tensor,
     token_names: Optional[List[str]] = None,
-    *,
-    x: Optional[torch.Tensor] = None,
-    y: Optional[torch.Tensor] = None,
-    probabilities: Optional[torch.Tensor] = None,
     max_wrong: int = 20,
 ) -> str:
-    """Export a single self-contained HTML report with architecture and weights.
-
-    Returns the file path written.
-    """
-    _ensure_dir(dir_path)
-    path = os.path.join(dir_path, f"{model.name}_report.html")
-
+    """Build the HTML string for the model report (no I/O)."""
     total_params = sum(p.numel() for p in model.backbone.parameters())
     param_meta = [(n, tuple(p.shape), p.numel()) for n, p in model.backbone.named_parameters()]
 
     # Load CSS from templates for readability and syntax highlighting; embed inline for portability
-    def _load_css() -> str:
-        repo_root = os.path.dirname(os.path.dirname(__file__))
-        css_path = os.path.join(repo_root, "templates", "model_report.css")
-        try:
-            with open(css_path, "r", encoding="utf-8") as cf:
-                css = cf.read()
-        except FileNotFoundError:
-            css = (
-                ":root{--bg:#0b0f14;--panel:#0f1620;--text:#e6edf3;--muted:#9aa4b2;--border:#253244;--header:#17212b;}"
-                "body{background:var(--bg);color:var(--text);font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;margin:20px;}"
-                "table{border-collapse:collapse;}table th,table td{border:1px solid var(--border);padding:4px 6px;}"
-            )
-        return f"<style>\n{css}\n</style>"
     styles = _load_css()
 
     html: List[str] = []
@@ -268,27 +126,44 @@ def export_model_readable_html(
     html.append("</div>")
 
     # Misclassified examples (sample)
-    misc_html = _render_misclassified_examples(
+    misc_html = render_misclassified_examples(
         x=x, y=y, probabilities=probabilities, token_names=token_names, max_wrong=max_wrong
     )
     if misc_html:
         html.append(misc_html)
 
     # Vocabulary self-attention (for attention models)
-    attn = _compute_vocab_self_attention(model, token_names)
-    if attn is not None:
-        html.append("<div class='section'>")
-        html.append("<h2>Vocabulary Self-Attention</h2>")
-        html.append(_tensor_to_html_table(
-            "attn[vocab→vocab] (softmax over columns)",
-            attn,
-            row_labels=token_names,
-            col_labels=token_names,
-        ))
-        html.append("</div>")
+    attn_html = render_vocab_attention_section(model, token_names)
+    if attn_html:
+        html.append(attn_html)
 
     html.append("</body></html>")
+    return "\n".join(html)
 
+
+def export_model_readable_html(
+    model: ModelAccess,
+    dir_path: str,
+    x: torch.Tensor,
+    y: torch.Tensor,
+    probabilities: torch.Tensor,
+    token_names: Optional[List[str]] = None,
+    max_wrong: int = 20,
+) -> str:
+    """Export a single self-contained HTML report with architecture and weights.
+
+    Returns the file path written.
+    """
+    _ensure_dir(dir_path)
+    path = os.path.join(dir_path, f"{model.name}_report.html")
+    html_content = build_model_readable_html(
+        model,
+        x,
+        y,
+        probabilities,
+        token_names,
+        max_wrong,
+    )
     with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join(html))
+        f.write(html_content)
     return path
