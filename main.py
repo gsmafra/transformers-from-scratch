@@ -15,7 +15,15 @@ def main():
     project_name = f"transformer-scratchpad-{task}"
 
     # Configure W&B and per-model metric namespaces
-    model_names = ["logreg", "mlp", "temporal", "self_attention", "self_attention_qkv", "attention"]
+    model_names = [
+        "logreg",
+        "mlp",
+        "temporal",
+        "self_attention",
+        "self_attention_qkv",
+        "self_attention_qkv_pos",
+        "attention",
+    ]
     run = init_wandb(project=project_name, model_names=model_names)
 
     run_artifacts = run_training(

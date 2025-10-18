@@ -10,7 +10,7 @@ from .misclassification import render_misclassified_examples
 
 
 def _load_css() -> str:
-    repo_root = os.path.dirname(os.path.dirname(__file__))
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     css_path = os.path.join(repo_root, "templates", "model_report.css")
     with open(css_path, "r", encoding="utf-8") as cf:
         css = cf.read()

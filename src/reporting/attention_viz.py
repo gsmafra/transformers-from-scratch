@@ -19,17 +19,16 @@ def compute_vocab_self_attention(model, token_names: Optional[List[str]]) -> Opt
     """
     if not token_names:
         return None
-    name = getattr(model, "name", "")
     bb = model.backbone
     with torch.no_grad():
-        if name == "self_attention" and hasattr(bb, "proj") and hasattr(bb, "d_model"):
+        if hasattr(bb, "proj") and hasattr(bb, "d_model"):
             W = bb.proj.weight.detach().cpu()  # (d, V)
             b = bb.proj.bias.detach().cpu()  # (d)
             E = torch.tanh(W.T + b)  # (V, d)
             scale = float(bb.d_model) ** 0.5
             logits = (E @ E.T) / scale  # (V, V)
             return torch.softmax(logits, dim=1)
-        if name == "self_attention_qkv" and hasattr(bb, "q_proj") and hasattr(bb, "k_proj") and hasattr(bb, "d_model"):
+        if hasattr(bb, "q_proj") and hasattr(bb, "k_proj") and hasattr(bb, "d_model"):
             Wq = bb.q_proj.weight.detach().cpu()  # (d, V)
             bq = bb.q_proj.bias.detach().cpu()
             Wk = bb.k_proj.weight.detach().cpu()

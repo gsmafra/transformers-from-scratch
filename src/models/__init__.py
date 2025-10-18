@@ -4,6 +4,7 @@ from .logreg import LogRegAccess
 from .mlp import MLPAccess
 from .self_attention import SelfAttentionAccess
 from .self_attention_qkv import SelfAttentionQKVAccess
+from .self_attention_qkv_pos import SelfAttentionQKVPosAccess
 from .temporal import SimpleTemporalPoolingClassifier, TemporalAccess  # kept for completeness
 
 __all__ = [
@@ -14,6 +15,7 @@ __all__ = [
     "AttentionAccess",
     "SelfAttentionAccess",
     "SelfAttentionQKVAccess",
+    "SelfAttentionQKVPosAccess",
     "TemporalAccess",
     "SimpleTemporalPoolingClassifier",
 ]
