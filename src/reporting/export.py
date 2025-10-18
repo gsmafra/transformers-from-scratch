@@ -51,18 +51,23 @@ def _render_misclassified_examples(
     parts.append("<p class='subtle'>Sample of inputs the model got wrong at the end of training.</p>")
     parts.append("<table class='tensor'>")
     parts.append("<tr><th>#</th><th>Input</th><th>y_true</th><th>p(class=1)</th><th>pred</th></tr>")
-    shown = 0
+    seen = set()
+    rows = []
     for i in wrong_indices:
-        if shown >= max_wrong:
-            break
-        seq_str = _one_hot_to_token_str(x_cpu[i], token_names) if x_cpu.dim() == 3 else ""
+        seq_idx = tuple(x_cpu[i].argmax(dim=-1).tolist())
+        if seq_idx in seen:
+            continue
+        seen.add(seq_idx)
+        seq_str = _one_hot_to_token_str(x_cpu[i], token_names)
         yv = int(y_cpu[i].item())
         pv = float(p_cpu[i].item())
         pr = int(preds[i].item())
+        rows.append((seq_idx, i, seq_str, yv, pv, pr))
+    rows.sort(key=lambda r: r[0])
+    for _, i, seq_str, yv, pv, pr in rows[:max_wrong]:
         parts.append(
             f"<tr><td>{i}</td><td>{escape(seq_str)}</td><td>{yv}</td><td>{_format_number(pv)}</td><td>{pr}</td></tr>"
         )
-        shown += 1
     parts.append("</table>")
     parts.append("</div>")
     return "\n".join(parts)
