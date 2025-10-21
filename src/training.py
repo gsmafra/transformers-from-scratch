@@ -15,7 +15,7 @@ from .tasks.arithmetic_common import TOKENS as ARITH_TOKENS
 from .reporting.training_logger import TrainingLogger
 
 
-def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun) -> Dict[str, Any]:
+def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun, *, x_test: Tensor, y_test: Tensor) -> Dict[str, Any]:
     """Train the model and return artifacts useful for reporting/analysis."""
 
     backbone = model.backbone
@@ -57,18 +57,32 @@ def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun) -> Dict
         # Advance learning rate schedule once per epoch
         optim.scheduler.step()
 
-        # Model-defined extra scalar metrics
-        extra = model.extra_metrics(x)
-        logger.end_epoch(epoch, extra_metrics=extra)
+        # End-of-epoch metrics
+        extra = model.extra_metrics(x) or {}
+        with torch.no_grad():
+            logits_te = model.forward(x_test)
+            loss_te = criterion(logits_te.squeeze(-1), y_test)
+            preds_te = (logits_te.detach().squeeze(-1) > 0).long()
+            acc_te = float((preds_te == y_test.long()).float().mean().item())
+        logger.end_epoch(
+            epoch,
+            extra_metrics=extra,
+            test_loss=float(loss_te.item()),
+            test_accuracy=acc_te,
+        )
 
     with no_grad():
+        # Train metrics
         final_logits = model.forward(x).squeeze(-1)
         final_probabilities = sigmoid(final_logits)
         predicted_class = (final_logits > 0).long()
         accuracy = (predicted_class == y.long().squeeze(-1)).float().mean().item()
 
-    w = final_linear.weight.detach()
-    b = final_linear.bias.detach()
+        # Test metrics
+        final_logits_test = model.forward(x_test).squeeze(-1)
+        final_probabilities_test = sigmoid(final_logits_test)
+        predicted_class_test = (final_logits_test > 0).long()
+        accuracy_test = (predicted_class_test == y_test.long().squeeze(-1)).float().mean().item()
 
     # Export readable artifacts for the trained model
     out_dir = os.path.join("artifacts", "models")
@@ -80,6 +94,9 @@ def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun) -> Dict
         final_probabilities,
         token_names=list(ARITH_TOKENS),
         max_wrong=20,
+        x_test=x_test,
+        y_test=y_test,
+        probabilities_test=final_probabilities_test,
     )
 
     histories = logger.histories()
@@ -88,13 +105,20 @@ def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun) -> Dict
         "y": y.detach(),
         "probabilities": final_probabilities.detach(),
         "predicted_class": predicted_class.detach(),
-        "loss_history": histories["loss_history"],
-        "weight_history": histories["weight_history"],
-        "bias_history": histories["bias_history"],
-        "final_weight": w,
-        "final_bias": b,
+        "accuracy_history_train": histories["accuracy_history_train"],
+        "loss_history_test": histories["loss_history_test"],
+        "loss_history_train": histories["loss_history_train"],
+        "accuracy_history_test": histories["accuracy_history_test"],
+        "x_test": x_test.detach(),
+        "y_test": y_test.detach(),
+        "probabilities_test": final_probabilities_test.detach(),
+        "predicted_class_test": predicted_class_test.detach(),
+        "weight_history_train": histories["weight_history_train"],
+        "bias_history_train": histories["bias_history_train"],
         "final_accuracy": accuracy,
-        "final_loss": histories["loss_history"][-1] if histories["loss_history"] else None,
+        "final_accuracy_test": accuracy_test,
+        "final_loss_train": histories["loss_history_train"][-1] if histories["loss_history_train"] else None,
+        "final_loss_test": float(model.make_loss()(final_logits_test, y_test).item()),
         "model_html_path": html_path,
     }
 
@@ -112,6 +136,8 @@ def run_training(
         seed=seed,
         task=task,
     )
+    # Prepare test split with a different seed
+    x_test, y_test = prepare_data(n_samples=n_samples, seed=seed + 1, task=task)
 
     # Build the suite of models to train this run
     sequence_length = int(x.size(1))
@@ -119,7 +145,7 @@ def run_training(
 
     results: Dict[str, Dict[str, Any]] = {}
     for name, mdl in models.items():
-        artifacts = train_model(model=mdl, x=x, y=y, run=run)
+        artifacts = train_model(model=mdl, x=x, y=y, run=run, x_test=x_test, y_test=y_test)
         # Use wrapper name to key results to avoid mismatch
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
 

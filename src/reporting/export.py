@@ -85,6 +85,10 @@ def build_model_readable_html(
     probabilities: torch.Tensor,
     token_names: Optional[List[str]] = None,
     max_wrong: int = 20,
+    *,
+    x_test: Optional[torch.Tensor] = None,
+    y_test: Optional[torch.Tensor] = None,
+    probabilities_test: Optional[torch.Tensor] = None,
 ) -> str:
     """Build the HTML string for the model report (no I/O)."""
     total_params = sum(p.numel() for p in model.backbone.parameters())
@@ -125,12 +129,20 @@ def build_model_readable_html(
         html.append(_tensor_to_html_table(name, tensor, token_names=token_names))
     html.append("</div>")
 
-    # Misclassified examples (sample)
-    misc_html = render_misclassified_examples(
+    # Misclassified examples (train)
+    misc_train = render_misclassified_examples(
         x=x, y=y, probabilities=probabilities, token_names=token_names, max_wrong=max_wrong
     )
-    if misc_html:
-        html.append(misc_html)
+    if misc_train:
+        html.append(misc_train.replace("<h2>Misclassified Examples</h2>", "<h2>Misclassified Examples — Train</h2>"))
+
+    # Misclassified examples (test)
+    if x_test is not None and y_test is not None and probabilities_test is not None:
+        misc_test = render_misclassified_examples(
+            x=x_test, y=y_test, probabilities=probabilities_test, token_names=token_names, max_wrong=max_wrong
+        )
+        if misc_test:
+            html.append(misc_test.replace("<h2>Misclassified Examples</h2>", "<h2>Misclassified Examples — Test</h2>"))
 
     # Vocabulary self-attention (for attention models)
     attn_html = render_vocab_attention_section(model, token_names)
@@ -149,6 +161,10 @@ def export_model_readable_html(
     probabilities: torch.Tensor,
     token_names: Optional[List[str]] = None,
     max_wrong: int = 20,
+    *,
+    x_test: Optional[torch.Tensor] = None,
+    y_test: Optional[torch.Tensor] = None,
+    probabilities_test: Optional[torch.Tensor] = None,
 ) -> str:
     """Export a single self-contained HTML report with architecture and weights.
 
@@ -163,6 +179,9 @@ def export_model_readable_html(
         probabilities,
         token_names,
         max_wrong,
+        x_test=x_test,
+        y_test=y_test,
+        probabilities_test=probabilities_test,
     )
     with open(path, "w", encoding="utf-8") as f:
         f.write(html_content)

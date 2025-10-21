@@ -29,20 +29,23 @@
   <script>
   function parseNum(v) { var x = parseFloat(v); return isNaN(x) ? null : x; }
   function applyMetric(metric) {
-    var table = document.getElementById('bench');
-    var cells = table.querySelectorAll('tbody td[data-acc]');
-    cells.forEach(function(td) {
-      var raw = td.getAttribute(metric === 'loss' ? 'data-loss' : 'data-acc') || '';
-      if (metric === 'loss') {
-        td.textContent = raw;
-      } else {
-        var x = parseFloat(raw);
-        td.textContent = isNaN(x) ? '' : (x * 100).toFixed(1) + '%';
-      }
+    ['bench-train', 'bench-test'].forEach(function(id) {
+      var table = document.getElementById(id);
+      if (!table) return;
+      var cells = table.querySelectorAll('tbody td[data-acc]');
+      cells.forEach(function(td) {
+        var raw = td.getAttribute(metric === 'loss' ? 'data-loss' : 'data-acc') || '';
+        if (metric === 'loss') {
+          td.textContent = raw;
+        } else {
+          var x = parseFloat(raw);
+          td.textContent = isNaN(x) ? '' : (x * 100).toFixed(1) + '%';
+        }
+      });
     });
   }
   function sortTable(th) {
-    var table = document.getElementById('bench');
+    var table = th.closest('table');
     var tbody = table.tBodies[0];
     var rows = Array.prototype.slice.call(tbody.rows);
     var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
@@ -72,7 +75,8 @@
     <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
     <button id="metric-loss" data-metric="loss">Loss</button>
   </div>
-  <table id="bench">
+  <h2 style="text-align:center; margin-top: 24px;">Train</h2>
+  <table id="bench-train">
     <thead>
       <tr>
         <th data-key="model" onclick="sortTable(this)">Model</th>
@@ -110,13 +114,13 @@
           <td data-key="has_pos_and_neg" data-acc="1.000000" data-loss="0.004046" class="num">1.000000</td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.730000" data-loss="0.533939" class="num">0.730000</td>
+          <td data-key="multi_digit_sum" data-acc="0.573000" data-loss="0.659059" class="num">0.573000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="0.995000" data-loss="0.056413" class="num">0.995000</td>
         
           
-          <td data-key="sign_of_winner" data-acc="0.989000" data-loss="0.036117" class="num">0.989000</td>
+          <td data-key="sign_of_winner" data-acc="0.977000" data-loss="0.072478" class="num">0.977000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="0.952000" data-loss="0.144073" class="num">0.952000</td>
@@ -139,13 +143,13 @@
           <td data-key="has_pos_and_neg" data-acc="0.561000" data-loss="0.686709" class="num">0.561000</td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.545000" data-loss="0.834402" class="num">0.545000</td>
+          <td data-key="multi_digit_sum" data-acc="0.536000" data-loss="0.841097" class="num">0.536000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="0.667000" data-loss="0.556779" class="num">0.667000</td>
         
           
-          <td data-key="sign_of_winner" data-acc="0.848000" data-loss="0.322855" class="num">0.848000</td>
+          <td data-key="sign_of_winner" data-acc="0.832000" data-loss="0.415223" class="num">0.832000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="0.626000" data-loss="0.696574" class="num">0.626000</td>
@@ -168,13 +172,13 @@
           <td data-key="has_pos_and_neg" data-acc="" data-loss="" class="num"></td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.966000" data-loss="0.120408" class="num">0.966000</td>
+          <td data-key="multi_digit_sum" data-acc="1.000000" data-loss="0.001731" class="num">1.000000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="" data-loss="" class="num"></td>
         
           
-          <td data-key="sign_of_winner" data-acc="" data-loss="" class="num"></td>
+          <td data-key="sign_of_winner" data-acc="1.000000" data-loss="0.006036" class="num">1.000000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="" data-loss="" class="num"></td>
@@ -197,13 +201,13 @@
           <td data-key="has_pos_and_neg" data-acc="0.995000" data-loss="0.014036" class="num">0.995000</td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.500000" data-loss="0.701649" class="num">0.500000</td>
+          <td data-key="multi_digit_sum" data-acc="0.607000" data-loss="0.603720" class="num">0.607000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="0.978000" data-loss="0.108054" class="num">0.978000</td>
         
           
-          <td data-key="sign_of_winner" data-acc="0.968000" data-loss="0.089798" class="num">0.968000</td>
+          <td data-key="sign_of_winner" data-acc="0.915000" data-loss="0.172964" class="num">0.915000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="0.954000" data-loss="0.146181" class="num">0.954000</td>
@@ -226,13 +230,13 @@
           <td data-key="has_pos_and_neg" data-acc="" data-loss="" class="num"></td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.628000" data-loss="0.621052" class="num">0.628000</td>
+          <td data-key="multi_digit_sum" data-acc="0.649000" data-loss="0.590785" class="num">0.649000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="" data-loss="" class="num"></td>
         
           
-          <td data-key="sign_of_winner" data-acc="" data-loss="" class="num"></td>
+          <td data-key="sign_of_winner" data-acc="0.983000" data-loss="0.083848" class="num">0.983000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="0.907000" data-loss="0.178623" class="num">0.907000</td>
@@ -255,13 +259,13 @@
           <td data-key="has_pos_and_neg" data-acc="" data-loss="" class="num"></td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.885000" data-loss="0.296308" class="num">0.885000</td>
+          <td data-key="multi_digit_sum" data-acc="0.857000" data-loss="0.310362" class="num">0.857000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="" data-loss="" class="num"></td>
         
           
-          <td data-key="sign_of_winner" data-acc="" data-loss="" class="num"></td>
+          <td data-key="sign_of_winner" data-acc="0.892000" data-loss="0.237560" class="num">0.892000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="" data-loss="" class="num"></td>
@@ -284,19 +288,113 @@
           <td data-key="has_pos_and_neg" data-acc="0.610000" data-loss="0.659291" class="num">0.610000</td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.548000" data-loss="0.690610" class="num">0.548000</td>
+          <td data-key="multi_digit_sum" data-acc="0.496000" data-loss="0.716610" class="num">0.496000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="0.734000" data-loss="0.495715" class="num">0.734000</td>
         
           
-          <td data-key="sign_of_winner" data-acc="0.947000" data-loss="0.160049" class="num">0.947000</td>
+          <td data-key="sign_of_winner" data-acc="0.915000" data-loss="0.212080" class="num">0.915000</td>
         
           
           <td data-key="single_digit_string_sum" data-acc="0.564000" data-loss="0.657355" class="num">0.564000</td>
         
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.605000" data-loss="0.673099" class="num">0.605000</td>
+        
+      </tr>
+      
+    </tbody>
+  </table>
+
+  <h2 style="text-align:center; margin-top: 24px;">Test</h2>
+  <table id="bench-test">
+    <thead>
+      <tr>
+        <th data-key="model" onclick="sortTable(this)">Model</th>
+        
+          <th data-key="multi_digit_sum" onclick="sortTable(this)">multi_digit_sum</th>
+        
+          <th data-key="sign_of_winner" onclick="sortTable(this)">sign_of_winner</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td data-key="model">attention</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.498000" data-loss="0.804800" class="num">0.498000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.958000" data-loss="0.092595" class="num">0.958000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">logreg</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.500000" data-loss="0.863440" class="num">0.500000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.821000" data-loss="0.419357" class="num">0.821000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">mlp</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.627000" data-loss="1.485012" class="num">0.627000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.867000" data-loss="0.610313" class="num">0.867000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">self_attention</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.498000" data-loss="0.841467" class="num">0.498000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.873000" data-loss="0.301457" class="num">0.873000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">self_attention_qkv</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.484000" data-loss="0.929624" class="num">0.484000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.948000" data-loss="0.127760" class="num">0.948000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">self_attention_qkv_pos</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.520000" data-loss="1.825886" class="num">0.520000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.865000" data-loss="0.306279" class="num">0.865000</td>
+        
+      </tr>
+      
+      <tr>
+        <td data-key="model">temporal</td>
+        
+          
+          <td data-key="multi_digit_sum" data-acc="0.493000" data-loss="0.765367" class="num">0.493000</td>
+        
+          
+          <td data-key="sign_of_winner" data-acc="0.892000" data-loss="0.272523" class="num">0.892000</td>
         
       </tr>
       

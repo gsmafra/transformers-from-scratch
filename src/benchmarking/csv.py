@@ -21,22 +21,39 @@ def update_benchmark_csv(task: str, results: Dict[str, Dict[str, Any]], *, csv_p
                 index[key] = i
 
     for model_name, artefacts in results.items():
-        acc = artefacts.get("final_accuracy")
-        loss = artefacts.get("final_loss")
-        key = (model_name, task)
-        new_row = {
+        # Train metrics (migrated from previous single-set reporting)
+        acc_tr = artefacts.get("final_accuracy")
+        loss_tr = artefacts.get("final_loss_train")
+        key_tr = (model_name, task)
+        row_tr = {
             "model": model_name,
             "task": task,
-            "accuracy": f"{acc:.6f}" if isinstance(acc, (int, float)) else "",
-            "loss": f"{loss:.6f}" if isinstance(loss, (int, float)) else "",
+            "accuracy": f"{acc_tr:.6f}" if isinstance(acc_tr, (int, float)) else "",
+            "loss": f"{loss_tr:.6f}" if isinstance(loss_tr, (int, float)) else "",
         }
-        if key in index:
-            rows[index[key]] = new_row
+        if key_tr in index:
+            rows[index[key_tr]] = row_tr
         else:
-            rows.append(new_row)
+            rows.append(row_tr)
+
+        # Test metrics (additional row with explicit split suffix)
+        acc_te = artefacts.get("final_accuracy_test")
+        loss_te = artefacts.get("final_loss_test")
+        if acc_te is not None or loss_te is not None:
+            task_te = f"{task} (test)"
+            key_te = (model_name, task_te)
+            row_te = {
+                "model": model_name,
+                "task": task_te,
+                "accuracy": f"{acc_te:.6f}" if isinstance(acc_te, (int, float)) else "",
+                "loss": f"{loss_te:.6f}" if isinstance(loss_te, (int, float)) else "",
+            }
+            if key_te in index:
+                rows[index[key_te]] = row_te
+            else:
+                rows.append(row_te)
 
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS)
         writer.writeheader()
         writer.writerows(rows)
-

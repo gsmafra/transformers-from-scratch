@@ -2,9 +2,9 @@ model,task,accuracy,loss
 logreg,sign_of_second_place,0.667000,0.556779
 self_attention,sign_of_second_place,0.978000,0.108054
 attention,sign_of_second_place,0.995000,0.056413
-logreg,sign_of_winner,0.848000,0.322855
-self_attention,sign_of_winner,0.968000,0.089798
-attention,sign_of_winner,0.989000,0.036117
+logreg,sign_of_winner,0.832000,0.415223
+self_attention,sign_of_winner,0.915000,0.172964
+attention,sign_of_winner,0.977000,0.072478
 logreg,has_all_tokens,0.520000,0.691926
 self_attention,has_all_tokens,1.000000,0.016449
 attention,has_all_tokens,1.000000,0.006074
@@ -13,7 +13,7 @@ self_attention,has_pos_and_neg,0.995000,0.014036
 attention,has_pos_and_neg,1.000000,0.004046
 temporal,has_all_tokens,0.506000,0.691935
 temporal,has_pos_and_neg,0.610000,0.659291
-temporal,sign_of_winner,0.947000,0.160049
+temporal,sign_of_winner,0.915000,0.212080
 temporal,sign_of_second_place,0.734000,0.495715
 logreg,any_abs_gt_one,0.562000,0.686015
 temporal,any_abs_gt_one,0.984000,0.065456
@@ -31,10 +31,27 @@ self_attention_qkv,single_digit_string_sum_swapped,0.968000,0.106264
 attention,single_digit_string_sum_swapped,0.950000,0.143671
 mlp,single_digit_string_sum_swapped,1.000000,0.000902
 self_attention_qkv_pos,single_digit_string_sum_swapped,0.993000,0.046098
-logreg,multi_digit_sum,0.545000,0.834402
-mlp,multi_digit_sum,0.966000,0.120408
-temporal,multi_digit_sum,0.548000,0.690610
-self_attention,multi_digit_sum,0.500000,0.701649
-self_attention_qkv,multi_digit_sum,0.628000,0.621052
-self_attention_qkv_pos,multi_digit_sum,0.885000,0.296308
-attention,multi_digit_sum,0.730000,0.533939
+logreg,multi_digit_sum,0.536000,0.841097
+mlp,multi_digit_sum,1.000000,0.001731
+temporal,multi_digit_sum,0.496000,0.716610
+self_attention,multi_digit_sum,0.607000,0.603720
+self_attention_qkv,multi_digit_sum,0.649000,0.590785
+self_attention_qkv_pos,multi_digit_sum,0.857000,0.310362
+attention,multi_digit_sum,0.573000,0.659059
+mlp,multi_digit_sum (test),0.627000,1.485012
+self_attention_qkv_pos,multi_digit_sum (test),0.520000,1.825886
+logreg,multi_digit_sum (test),0.500000,0.863440
+temporal,multi_digit_sum (test),0.493000,0.765367
+self_attention,multi_digit_sum (test),0.498000,0.841467
+self_attention_qkv,multi_digit_sum (test),0.484000,0.929624
+attention,multi_digit_sum (test),0.498000,0.804800
+logreg,sign_of_winner (test),0.821000,0.419357
+mlp,sign_of_winner,1.000000,0.006036
+mlp,sign_of_winner (test),0.867000,0.610313
+temporal,sign_of_winner (test),0.892000,0.272523
+self_attention,sign_of_winner (test),0.873000,0.301457
+self_attention_qkv,sign_of_winner,0.983000,0.083848
+self_attention_qkv,sign_of_winner (test),0.948000,0.127760
+self_attention_qkv_pos,sign_of_winner,0.892000,0.237560
+self_attention_qkv_pos,sign_of_winner (test),0.865000,0.306279
+attention,sign_of_winner (test),0.958000,0.092595

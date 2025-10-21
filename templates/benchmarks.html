@@ -29,20 +29,23 @@
   <script>
   function parseNum(v) { var x = parseFloat(v); return isNaN(x) ? null : x; }
   function applyMetric(metric) {
-    var table = document.getElementById('bench');
-    var cells = table.querySelectorAll('tbody td[data-acc]');
-    cells.forEach(function(td) {
-      var raw = td.getAttribute(metric === 'loss' ? 'data-loss' : 'data-acc') || '';
-      if (metric === 'loss') {
-        td.textContent = raw;
-      } else {
-        var x = parseFloat(raw);
-        td.textContent = isNaN(x) ? '' : (x * 100).toFixed(1) + '%';
-      }
+    ['bench-train', 'bench-test'].forEach(function(id) {
+      var table = document.getElementById(id);
+      if (!table) return;
+      var cells = table.querySelectorAll('tbody td[data-acc]');
+      cells.forEach(function(td) {
+        var raw = td.getAttribute(metric === 'loss' ? 'data-loss' : 'data-acc') || '';
+        if (metric === 'loss') {
+          td.textContent = raw;
+        } else {
+          var x = parseFloat(raw);
+          td.textContent = isNaN(x) ? '' : (x * 100).toFixed(1) + '%';
+        }
+      });
     });
   }
   function sortTable(th) {
-    var table = document.getElementById('bench');
+    var table = th.closest('table');
     var tbody = table.tBodies[0];
     var rows = Array.prototype.slice.call(tbody.rows);
     var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
@@ -72,11 +75,12 @@
     <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
     <button id="metric-loss" data-metric="loss">Loss</button>
   </div>
-  <table id="bench">
+  <h2 style="text-align:center; margin-top: 24px;">Train</h2>
+  <table id="bench-train">
     <thead>
       <tr>
         <th data-key="model" onclick="sortTable(this)">Model</th>
-        {% for t in tasks %}
+        {% for t in tasks_train %}
           <th data-key="{{ t }}" onclick="sortTable(this)">{{ t }}</th>
         {% endfor %}
       </tr>
@@ -85,8 +89,31 @@
       {% for m in models %}
       <tr>
         <td data-key="model">{{ m }}</td>
-        {% for t in tasks %}
-          {% set cell = values.get(m, {}).get(t) %}
+        {% for t in tasks_train %}
+          {% set cell = values_train.get(m, {}).get(t) %}
+          <td data-key="{{ t }}" data-acc="{{ cell.accuracy if cell else '' }}" data-loss="{{ cell.loss if cell else '' }}" class="num">{{ cell.accuracy if cell else '' }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2 style="text-align:center; margin-top: 24px;">Test</h2>
+  <table id="bench-test">
+    <thead>
+      <tr>
+        <th data-key="model" onclick="sortTable(this)">Model</th>
+        {% for t in tasks_test %}
+          <th data-key="{{ t }}" onclick="sortTable(this)">{{ t }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in models %}
+      <tr>
+        <td data-key="model">{{ m }}</td>
+        {% for t in tasks_test %}
+          {% set cell = values_test.get(m, {}).get(t) %}
           <td data-key="{{ t }}" data-acc="{{ cell.accuracy if cell else '' }}" data-loss="{{ cell.loss if cell else '' }}" class="num">{{ cell.accuracy if cell else '' }}</td>
         {% endfor %}
       </tr>
