@@ -31,3 +31,10 @@ self_attention_qkv,single_digit_string_sum_swapped,0.968000,0.106264
 attention,single_digit_string_sum_swapped,0.950000,0.143671
 mlp,single_digit_string_sum_swapped,1.000000,0.000902
 self_attention_qkv_pos,single_digit_string_sum_swapped,0.993000,0.046098
+logreg,multi_digit_sum,0.545000,0.834402
+mlp,multi_digit_sum,0.966000,0.120408
+temporal,multi_digit_sum,0.548000,0.690610
+self_attention,multi_digit_sum,0.500000,0.701649
+self_attention_qkv,multi_digit_sum,0.628000,0.621052
+self_attention_qkv_pos,multi_digit_sum,0.885000,0.296308
+attention,multi_digit_sum,0.730000,0.533939

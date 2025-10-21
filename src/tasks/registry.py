@@ -4,6 +4,7 @@ from .has_pos_and_neg import HasPosAndNegTask
 from .sign_of_second_place import SignOfSecondPlaceTask
 from .single_digit_string_sum import SingleDigitStringSumTask
 from .single_digit_string_sum_swapped import SingleDigitStringSumSwappedTask
+from .multi_digit_sum import MultiDigitSumTask
 from .sign_of_winner import SignOfWinnerTask
 
 
@@ -18,6 +19,7 @@ TASK_REGISTRY = {
     "any_abs_gt_one": AnyAbsGreaterThanOneTask(),
     "single_digit_string_sum": SingleDigitStringSumTask(),
     "single_digit_string_sum_swapped": SingleDigitStringSumSwappedTask(),
+    "multi_digit_sum": MultiDigitSumTask(),
 }
 
 __all__ = ["TASK_REGISTRY"]

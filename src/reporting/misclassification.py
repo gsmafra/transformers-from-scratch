@@ -12,16 +12,37 @@ def _format_number(x: float) -> str:
 
 
 def _one_hot_to_token_str(sample: torch.Tensor, token_names: Optional[List[str]]) -> str:
-    """Convert a one-hot sequence (T, V) into a space-separated token string.
+    """Convert a one-hot sequence (T, V) into a readable token string.
 
-    If `token_names` are provided and match the vocabulary, they are used.
-    Otherwise falls back to integer indices.
+    - Uses `token_names` when provided.
+    - If tokens look like arithmetic digits/operators, groups consecutive digits
+      into multi-digit numbers and spaces around '+', '='.
+    - Otherwise falls back to space-separated tokens.
     """
     idx = sample.argmax(dim=-1).tolist()
     if token_names and len(token_names) >= sample.size(-1):
         toks = [str(token_names[i]) for i in idx]
     else:
         toks = [str(i) for i in idx]
+
+    # Smart grouping for arithmetic vocabularies
+    arithmetic_syms = set(str(d) for d in range(10)) | {"+", "="}
+    if all(t in arithmetic_syms for t in toks):
+        parts: List[str] = []
+        cur_digits: List[str] = []
+        for t in toks:
+            if t.isdigit() and len(t) == 1:
+                cur_digits.append(t)
+            else:
+                if cur_digits:
+                    parts.append("".join(cur_digits))
+                    cur_digits = []
+                parts.append(t)
+        if cur_digits:
+            parts.append("".join(cur_digits))
+        return " ".join(parts)
+
+    # Fallback: space-separated tokens
     return " ".join(toks)
 
 
