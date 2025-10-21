@@ -15,7 +15,16 @@ from .tasks.arithmetic_common import TOKENS as ARITH_TOKENS
 from .reporting.training_logger import TrainingLogger
 
 
-def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun, *, x_test: Tensor, y_test: Tensor) -> Dict[str, Any]:
+def train_model(
+    model: ModelAccess,
+    x: Tensor,
+    y: Tensor,
+    run: WandbRun,
+    *,
+    x_test: Tensor,
+    y_test: Tensor,
+    task_name: Optional[str],
+) -> Dict[str, Any]:
     """Train the model and return artifacts useful for reporting/analysis."""
 
     backbone = model.backbone
@@ -84,19 +93,23 @@ def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun, *, x_te
         predicted_class_test = (final_logits_test > 0).long()
         accuracy_test = (predicted_class_test == y_test.long().squeeze(-1)).float().mean().item()
 
-    # Export readable artifacts for the trained model
-    out_dir = os.path.join("artifacts", "models")
+    # Export readable artifacts: keep a flat structure under 'artifacts/'
+    out_dir = os.path.join("artifacts")
+    # Use token names only for tokenized arithmetic tasks (one-hot over 12-token vocab)
+    token_names = list(ARITH_TOKENS) if int(x.size(-1)) == len(ARITH_TOKENS) else None
+
     html_path = export_model_readable_html(
         model,
         out_dir,
         x,
         y,
         final_probabilities,
-        token_names=list(ARITH_TOKENS),
+        token_names=token_names,
         max_wrong=20,
         x_test=x_test,
         y_test=y_test,
         probabilities_test=final_probabilities_test,
+        task_name=task_name,
     )
 
     histories = logger.histories()
@@ -145,7 +158,15 @@ def run_training(
 
     results: Dict[str, Dict[str, Any]] = {}
     for name, mdl in models.items():
-        artifacts = train_model(model=mdl, x=x, y=y, run=run, x_test=x_test, y_test=y_test)
+        artifacts = train_model(
+            model=mdl,
+            x=x,
+            y=y,
+            run=run,
+            x_test=x_test,
+            y_test=y_test,
+            task_name=task,
+        )
         # Use wrapper name to key results to avoid mismatch
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
 

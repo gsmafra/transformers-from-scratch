@@ -7,7 +7,7 @@ from .sampling import stratified_sample_balanced
 
 
 # Set which task the code points to by default
-DEFAULT_TASK = "multi_digit_sum"
+DEFAULT_TASK = "sign_of_winner"
 
 
 def prepare_data(n_samples: int, seed: int = 0, *, task: Optional[str] = None) -> Tuple[Tensor, Tensor]:

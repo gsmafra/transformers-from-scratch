@@ -27,7 +27,7 @@ Logging and Reports
     - Scalars: `metrics/loss_train`, `metrics/accuracy_train`, `metrics/loss_test`, `metrics/accuracy_test`, plus any model-specific extras.
   - End-of-run panels per model for both splits: ROC curve, PR curve, and confusion matrix.
 - HTML artifacts
-  - Per-model readable report is written to `artifacts/models/<model>_report.html` with parameter tables and misclassified examples for both train and test.
+  - Per-model readable report is written to `artifacts/<task>/<model>.html` with parameter tables and misclassified examples for both train and test.
   - The comparison dashboard is written to `benchmarks/index.html`. It shows two tables (Train and Test) built from `benchmarks/benchmarking.csv`.
 
 Running

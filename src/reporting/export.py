@@ -165,13 +165,16 @@ def export_model_readable_html(
     x_test: Optional[torch.Tensor] = None,
     y_test: Optional[torch.Tensor] = None,
     probabilities_test: Optional[torch.Tensor] = None,
+    task_name: Optional[str] = None,
 ) -> str:
     """Export a single self-contained HTML report with architecture and weights.
 
     Returns the file path written.
     """
-    _ensure_dir(dir_path)
-    path = os.path.join(dir_path, f"{model.name}_report.html")
+    # Organize as artifacts/<task>/<model>.html (or artifacts/<model>.html if task missing)
+    base_dir = os.path.join(dir_path, task_name) if task_name else dir_path
+    _ensure_dir(base_dir)
+    path = os.path.join(base_dir, f"{model.name}.html")
     html_content = build_model_readable_html(
         model,
         x,
