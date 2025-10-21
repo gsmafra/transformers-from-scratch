@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import torch
 from torch import Tensor, no_grad, sigmoid
 from torch.nn.utils import clip_grad_norm_
-from tqdm import trange
+from tqdm import trange, tqdm
 from wandb.sdk.wandb_run import Run as WandbRun
 
 from .reporting.export import export_model_readable_html
@@ -154,7 +154,8 @@ def run_training(
     models = build_models(sequence_length=sequence_length, n_features=int(x.size(-1)), only=model_names)
 
     results: Dict[str, Dict[str, Any]] = {}
-    for name, mdl in models.items():
+    model_items = list(models.items())
+    for name, mdl in tqdm(model_items, desc="models", leave=False):
         artifacts = train_model(
             model=mdl,
             x=x,
