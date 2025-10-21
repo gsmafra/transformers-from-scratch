@@ -6,40 +6,51 @@ from src.reporting.wandb_init import init_wandb
 
 
 N_SAMPLES = 1000
-TASK = "sign_of_winner"
+# Configure which tasks and models to run
+TASKS = [
+    "sign_of_winner",
+    "sign_of_second_place",
+    "has_pos_and_neg",
+    "has_all_tokens",
+    "any_abs_gt_one",
+    "single_digit_string_sum",
+    "single_digit_string_sum_swapped",
+    "multi_digit_sum",
+]
+MODELS = [
+    "logreg",
+    "mlp",
+    "temporal",
+    "self_attention",
+    "self_attention_qkv",
+    "self_attention_qkv_pos",
+    "attention",
+]
 
 
 def main():
-    task = TASK
-    project_name = f"transformer-scratchpad-{task}"
+    # Run all configured tasks × models
+    for task in TASKS:
+        project_name = f"transformer-scratchpad-{task}"
+        run = init_wandb(project=project_name, model_names=MODELS)
 
-    # Configure W&B and per-model metric namespaces
-    model_names = [
-        "logreg",
-        "mlp",
-        "temporal",
-        "self_attention",
-        "self_attention_qkv",
-        "self_attention_qkv_pos",
-        "attention",
-    ]
-    run = init_wandb(project=project_name, model_names=model_names)
+        run_artifacts = run_training(
+            n_samples=N_SAMPLES,
+            seed=0,
+            run=run,
+            task=task,
+            model_names=MODELS,
+        )
 
-    run_artifacts = run_training(
-        n_samples=N_SAMPLES,
-        seed=0,
-        run=run,
-        task=task,
-        model_names=model_names,
-    )
+        # Generate eval/report panels under each model prefix
+        for name, artifacts in run_artifacts.items():
+            generate_run_report(run, artifacts, prefix=name)
 
-    # Generate eval/report panels under each model prefix
-    for name, artifacts in run_artifacts.items():
-        generate_run_report(run, artifacts, prefix=name)
+        run.finish()
 
-    run.finish()
+        update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
 
-    update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
+    # Refresh comparison dashboard after all tasks are processed
     generate_benchmark_html(csv_path="benchmarks/benchmarking.csv", html_path="benchmarks/index.html")
 
 
