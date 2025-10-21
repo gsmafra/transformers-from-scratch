@@ -15,12 +15,7 @@ from .tasks.arithmetic_common import TOKENS as ARITH_TOKENS
 from .reporting.training_logger import TrainingLogger
 
 
-def train_model(
-    model: ModelAccess,
-    x: Tensor,
-    y: Tensor,
-    run: WandbRun,
-) -> Dict[str, Any]:
+def train_model(model: ModelAccess, x: Tensor, y: Tensor, run: WandbRun) -> Dict[str, Any]:
     """Train the model and return artifacts useful for reporting/analysis."""
 
     backbone = model.backbone
@@ -105,7 +100,6 @@ def train_model(
 
 
 def run_training(
-    sequence_length: int,
     n_samples: int,
     seed: int,
     run: WandbRun,
@@ -114,13 +108,13 @@ def run_training(
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
     x, y = prepare_data(
-        sequence_length=sequence_length,
         n_samples=n_samples,
         seed=seed,
         task=task,
     )
 
     # Build the suite of models to train this run
+    sequence_length = int(x.size(1))
     models = build_models(sequence_length=sequence_length, n_features=int(x.size(-1)))
 
     results: Dict[str, Dict[str, Any]] = {}

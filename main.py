@@ -6,7 +6,6 @@ from src.training import run_training
 from src.reporting.wandb_init import init_wandb
 
 
-SEQUENCE_LENGTH = 5
 N_SAMPLES = 1000
 
 
@@ -27,7 +26,6 @@ def main():
     run = init_wandb(project=project_name, model_names=model_names)
 
     run_artifacts = run_training(
-        sequence_length=SEQUENCE_LENGTH,
         n_samples=N_SAMPLES,
         seed=0,
         run=run,

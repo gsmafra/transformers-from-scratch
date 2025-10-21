@@ -7,6 +7,9 @@ from torch import Tensor
 class Task(ABC):
     # Default per-timestep feature dimension. Token tasks override this.
     feature_dim: int = 2
+    # Default sequence length for tasks that don't fix T explicitly.
+    # Token tasks and structured tasks may override this.
+    sequence_length: int = 5
     @abstractmethod
     def label(self, x: Tensor) -> Tensor:
         """Compute labels for inputs `x`.

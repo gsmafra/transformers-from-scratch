@@ -10,13 +10,7 @@ from .sampling import stratified_sample_balanced
 DEFAULT_TASK = "single_digit_string_sum_swapped"
 
 
-def prepare_data(
-    sequence_length: int,
-    n_samples: int,
-    seed: int = 0,
-    *,
-    task: Optional[str] = None,
-) -> Tuple[Tensor, Tensor]:
+def prepare_data(n_samples: int, seed: int = 0, *, task: Optional[str] = None) -> Tuple[Tensor, Tensor]:
     """Generate sequences and labels for a selected task.
 
     Returns `(x, y)` with shapes `(n_samples, sequence_length, F)` and `(n_samples,)`.
@@ -29,9 +23,13 @@ def prepare_data(
     if task_name not in TASK_REGISTRY:
         raise ValueError(f"Unknown task '{task_name}'. Available: {list(TASK_REGISTRY.keys())}")
 
+    # Determine sequence length from the task (base Task provides a default)
+    task_obj = TASK_REGISTRY[task_name]
+    T = int(task_obj.sequence_length)
+
     # Generate candidates then stratified sample 50/50 with replacement
     n_cand = max(10 * n_samples, 512)
-    x_cand, y_cand = TASK_REGISTRY[task_name].generate_candidates(n_cand, sequence_length)
+    x_cand, y_cand = task_obj.generate_candidates(n_cand, T)
     # If a class is missing, fail fast and surface a clear error
     if (y_cand > 0.5).sum() == 0 or (y_cand <= 0.5).sum() == 0:
         raise ValueError("Candidate pool missing a class; increase candidate size or adjust task parameters.")
