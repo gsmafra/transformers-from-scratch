@@ -7,8 +7,7 @@ How It Works
 
 - Data and tasks
   - Tasks live under `src/tasks/` and subclass `Task` (`src/tasks/base.py`). Each task defines a `feature_dim` and a `sequence_length`.
-  - The default task is set in `src/tasks/generation.py` as `DEFAULT_TASK`. Change it there to switch tasks.
-  - `prepare_data(n_samples, seed, task=...)` generates a train set using `seed` and a test set using `seed+1`. Sequence length is derived from the selected task.
+  - The selected task is defined in `main.py` via `TASK`. `prepare_data(n_samples, seed, task=...)` uses that to generate data (train uses `seed`, test uses `seed+1`). Sequence length is derived from the selected task.
 - Models
   - Models live under `src/models/` and expose lightweight “access” wrappers by subclassing `ModelAccess`.
   - The set of models trained is determined in `src/models/registry.py` by `build_models(...)`. Inspect that file for the current selection.
@@ -39,7 +38,7 @@ Running
 
 Configuration (stable touchpoints)
 
-- Task: set `DEFAULT_TASK` in `src/tasks/generation.py`.
+- Task: set `TASK` in `main.py`.
 - Sample size: edit `N_SAMPLES` in `main.py`.
 - Models included: edit `build_models(...)` in `src/models/registry.py`.
 - Model hyperparameters: adjust the respective `ModelAccess` subclass (epochs, LR, batch size).

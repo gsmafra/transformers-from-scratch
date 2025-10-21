@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Tuple
 
 from torch import Tensor, manual_seed
 
@@ -6,11 +6,7 @@ from .registry import TASK_REGISTRY
 from .sampling import stratified_sample_balanced
 
 
-# Set which task the code points to by default
-DEFAULT_TASK = "sign_of_winner"
-
-
-def prepare_data(n_samples: int, seed: int = 0, *, task: Optional[str] = None) -> Tuple[Tensor, Tensor]:
+def prepare_data(n_samples: int, seed: int = 0, *, task: str) -> Tuple[Tensor, Tensor]:
     """Generate sequences and labels for a selected task.
 
     Returns `(x, y)` with shapes `(n_samples, sequence_length, F)` and `(n_samples,)`.
@@ -18,7 +14,7 @@ def prepare_data(n_samples: int, seed: int = 0, *, task: Optional[str] = None) -
     """
     manual_seed(seed)
 
-    task_name = task or DEFAULT_TASK
+    task_name = task
 
     if task_name not in TASK_REGISTRY:
         raise ValueError(f"Unknown task '{task_name}'. Available: {list(TASK_REGISTRY.keys())}")

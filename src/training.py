@@ -141,14 +141,10 @@ def run_training(
     seed: int,
     run: WandbRun,
     *,
-    task: Optional[str] = None,
+    task: str,
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
-    x, y = prepare_data(
-        n_samples=n_samples,
-        seed=seed,
-        task=task,
-    )
+    x, y = prepare_data(n_samples=n_samples, seed=seed, task=task)
     # Prepare test split with a different seed
     x_test, y_test = prepare_data(n_samples=n_samples, seed=seed + 1, task=task)
 
