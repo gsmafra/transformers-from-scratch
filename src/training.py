@@ -142,6 +142,7 @@ def run_training(
     run: WandbRun,
     *,
     task: str,
+    model_names: list[str],
 ) -> Dict[str, Dict[str, Any]]:
     """High-level convenience function to prepare data, build, and train model."""
     x, y = prepare_data(n_samples=n_samples, seed=seed, task=task)
@@ -150,7 +151,7 @@ def run_training(
 
     # Build the suite of models to train this run
     sequence_length = int(x.size(1))
-    models = build_models(sequence_length=sequence_length, n_features=int(x.size(-1)))
+    models = build_models(sequence_length=sequence_length, n_features=int(x.size(-1)), only=model_names)
 
     results: Dict[str, Dict[str, Any]] = {}
     for name, mdl in models.items():

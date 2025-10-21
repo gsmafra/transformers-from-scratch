@@ -6,7 +6,7 @@ from src.reporting.wandb_init import init_wandb
 
 
 N_SAMPLES = 1000
-TASK = "multi_digit_sum"
+TASK = "sign_of_winner"
 
 
 def main():
@@ -30,6 +30,7 @@ def main():
         seed=0,
         run=run,
         task=task,
+        model_names=model_names,
     )
 
     # Generate eval/report panels under each model prefix
