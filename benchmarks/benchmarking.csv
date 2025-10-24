@@ -30,16 +30,16 @@ self_attention,single_digit_string_sum_swapped,0.966000,0.127078
 self_attention_qkv,single_digit_string_sum_swapped,0.940000,0.156458
 attention,single_digit_string_sum_swapped,0.965000,0.115967
 mlp,single_digit_string_sum_swapped,1.000000,0.002200
-self_attention_qkv_pos,single_digit_string_sum_swapped,0.994000,0.027343
+self_attention_qkv_pos,single_digit_string_sum_swapped,0.997000,0.014883
 logreg,multi_digit_sum,0.536000,0.841097
 mlp,multi_digit_sum,1.000000,0.001731
 temporal,multi_digit_sum,0.496000,0.716610
 self_attention,multi_digit_sum,0.607000,0.603720
 self_attention_qkv,multi_digit_sum,0.649000,0.590785
-self_attention_qkv_pos,multi_digit_sum,0.857000,0.310362
+self_attention_qkv_pos,multi_digit_sum,0.894000,0.281992
 attention,multi_digit_sum,0.573000,0.659059
 mlp,multi_digit_sum (test),0.627000,1.485012
-self_attention_qkv_pos,multi_digit_sum (test),0.520000,1.825886
+self_attention_qkv_pos,multi_digit_sum (test),0.510000,1.833754
 logreg,multi_digit_sum (test),0.500000,0.863440
 temporal,multi_digit_sum (test),0.493000,0.765367
 self_attention,multi_digit_sum (test),0.498000,0.841467
@@ -52,26 +52,26 @@ temporal,sign_of_winner (test),0.892000,0.272523
 self_attention,sign_of_winner (test),0.873000,0.301457
 self_attention_qkv,sign_of_winner,0.983000,0.083848
 self_attention_qkv,sign_of_winner (test),0.948000,0.127760
-self_attention_qkv_pos,sign_of_winner,0.892000,0.237560
-self_attention_qkv_pos,sign_of_winner (test),0.865000,0.306279
+self_attention_qkv_pos,sign_of_winner,0.895000,0.254581
+self_attention_qkv_pos,sign_of_winner (test),0.882000,0.303652
 attention,sign_of_winner (test),0.958000,0.092595
 logreg,single_digit_string_sum_swapped (test),0.538000,0.733067
 mlp,single_digit_string_sum_swapped (test),0.948000,0.224002
 temporal,single_digit_string_sum_swapped (test),0.608000,0.670840
 self_attention,single_digit_string_sum_swapped (test),0.962000,0.148615
 self_attention_qkv,single_digit_string_sum_swapped (test),0.927000,0.222619
-self_attention_qkv_pos,single_digit_string_sum_swapped (test),0.968000,0.167928
+self_attention_qkv_pos,single_digit_string_sum_swapped (test),0.966000,0.150825
 attention,single_digit_string_sum_swapped (test),0.957000,0.128181
-self_attention_qkv_pos,sign_of_second_place,0.748000,0.480104
-self_attention_qkv_pos,sign_of_second_place (test),0.713000,0.546147
-self_attention_qkv_pos,has_pos_and_neg,0.907000,0.224602
-self_attention_qkv_pos,has_pos_and_neg (test),0.882000,0.292494
-self_attention_qkv_pos,has_all_tokens,1.000000,0.000025
-self_attention_qkv_pos,has_all_tokens (test),1.000000,0.000026
-self_attention_qkv_pos,any_abs_gt_one,0.874000,0.318760
-self_attention_qkv_pos,any_abs_gt_one (test),0.834000,0.408390
-self_attention_qkv_pos,single_digit_string_sum,0.994000,0.029116
-self_attention_qkv_pos,single_digit_string_sum (test),0.988000,0.059998
+self_attention_qkv_pos,sign_of_second_place,0.736000,0.492016
+self_attention_qkv_pos,sign_of_second_place (test),0.713000,0.545256
+self_attention_qkv_pos,has_pos_and_neg,0.902000,0.220573
+self_attention_qkv_pos,has_pos_and_neg (test),0.878000,0.300272
+self_attention_qkv_pos,has_all_tokens,1.000000,0.000014
+self_attention_qkv_pos,has_all_tokens (test),1.000000,0.000030
+self_attention_qkv_pos,any_abs_gt_one,0.867000,0.321800
+self_attention_qkv_pos,any_abs_gt_one (test),0.825000,0.405017
+self_attention_qkv_pos,single_digit_string_sum,0.966000,0.054836
+self_attention_qkv_pos,single_digit_string_sum (test),0.951000,0.118362
 logreg,sign_of_second_place (test),0.631000,0.661067
 mlp,sign_of_second_place,0.920000,0.231670
 mlp,sign_of_second_place (test),0.680000,1.054992
