@@ -1,5 +1,5 @@
 from .attention import AttentionAccess
-from .base import ModelAccess, make_tanh_classifier_head
+from .base import ModelAccess
 from .logreg import LogRegAccess
 from .mlp import MLPAccess
 from .self_attention import SelfAttentionAccess
@@ -9,7 +9,6 @@ from .temporal import SimpleTemporalPoolingClassifier, TemporalAccess  # kept fo
 
 __all__ = [
     "ModelAccess",
-    "make_tanh_classifier_head",
     "LogRegAccess",
     "MLPAccess",
     "AttentionAccess",

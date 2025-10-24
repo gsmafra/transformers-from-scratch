@@ -1,10 +1,10 @@
-from typing import Dict, Optional
+from typing import Dict
 
 import torch
 from torch import Tensor
 from torch.nn import Linear, Module
 
-from .base import ModelAccess, make_tanh_classifier_head
+from .base import ModelAccess
 from .metrics import summarize_stats
 
 
@@ -13,8 +13,8 @@ class SimpleSelfAttentionClassifier(Module):
         super().__init__()
         self.d_model = d_model
         self.proj = Linear(n_features, d_model)
-        # Tanh MLP head ending in Linear; output logits (no Sigmoid)
-        self.classifier = make_tanh_classifier_head(d_model)
+        self.post_attn = Linear(d_model, d_model)
+        self.classifier = Linear(d_model, 1)
 
     def forward(self, x_in: Tensor) -> Tensor:
         hidden = torch.tanh(self.proj(x_in))  # (N, T, d)
@@ -22,6 +22,7 @@ class SimpleSelfAttentionClassifier(Module):
         attn = torch.softmax(similarity, dim=2)  # (N, T, T)
         hidden_c = attn @ hidden  # (N, T, d)
         pooled = hidden_c.mean(dim=1)  # (N, d)
+        pooled = torch.tanh(self.post_attn(pooled))
         return self.classifier(pooled)
 
 
@@ -39,8 +40,7 @@ class SelfAttentionAccess(ModelAccess):
         )
 
     def final_linear(self) -> Linear:
-        # final linear is the last layer of the head Sequential
-        return self.backbone.classifier[2]
+        return self.backbone.classifier
 
     def extra_metrics(self, x: Tensor) -> Dict[str, float]:
         hidden = torch.tanh(self.backbone.proj(x))

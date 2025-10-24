@@ -1,10 +1,10 @@
-from typing import Dict, Optional
+from typing import Dict
 
 import torch
 from torch import Tensor
 from torch.nn import Linear, Module
 
-from .base import ModelAccess, make_tanh_classifier_head
+from .base import ModelAccess
 from .metrics import summarize_stats
 
 
@@ -15,7 +15,8 @@ class SelfAttentionQKVClassifier(Module):
         self.q_proj = Linear(n_features, d_model)
         self.k_proj = Linear(n_features, d_model)
         self.v_proj = Linear(n_features, d_model)
-        self.classifier = make_tanh_classifier_head(d_model)
+        self.post_attn = Linear(d_model, d_model)
+        self.classifier = Linear(d_model, 1)
 
     def forward(self, x_in: Tensor) -> Tensor:
         q = torch.tanh(self.q_proj(x_in))  # (N, T, d)
@@ -25,6 +26,7 @@ class SelfAttentionQKVClassifier(Module):
         attn = torch.softmax(scores, dim=2)  # (N, T, T)
         context = attn @ v  # (N, T, d)
         pooled = context.mean(dim=1)  # (N, d)
+        pooled = torch.tanh(self.post_attn(pooled))
         return self.classifier(pooled)
 
 
@@ -42,7 +44,7 @@ class SelfAttentionQKVAccess(ModelAccess):
         )
 
     def final_linear(self) -> Linear:
-        return self.backbone.classifier[2]
+        return self.backbone.classifier
 
     def extra_metrics(self, x: Tensor) -> Dict[str, float]:
         q = torch.tanh(self.backbone.q_proj(x))

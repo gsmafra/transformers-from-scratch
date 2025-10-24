@@ -4,7 +4,7 @@ import torch
 from torch import Tensor
 from torch.nn import Linear, Module
 
-from .base import ModelAccess, make_tanh_classifier_head
+from .base import ModelAccess
 from .metrics import summarize_stats
 
 
@@ -39,7 +39,8 @@ class SelfAttentionQKVPosClassifier(Module):
         # Learnable [CLS] token in input feature space (same dimensionality as x_in features)
         if self.use_cls_token:
             self.cls_token = torch.nn.Parameter(torch.zeros(n_features))
-        self.classifier = make_tanh_classifier_head(d_model)
+        self.post_attn = Linear(d_model, d_model)
+        self.classifier = Linear(d_model, 1)
 
     def forward(self, x_in: Tensor) -> Tensor:
         N, T, _ = x_in.shape
@@ -64,10 +65,11 @@ class SelfAttentionQKVPosClassifier(Module):
         context = attn @ v  # (N, T_eff, d)
 
         if self.use_cls_token:
-            pooled = context[:, 0, :]  # (N, d) — [CLS] representation
+            pooled = context[:, 0, :]  # (N, d)
         else:
             pooled = context.mean(dim=1)  # (N, d)
 
+        pooled = torch.tanh(self.post_attn(pooled))
         return self.classifier(pooled)
 
 
@@ -87,7 +89,7 @@ class SelfAttentionQKVPosAccess(ModelAccess):
         )
 
     def final_linear(self) -> Linear:
-        return self.backbone.classifier[2]
+        return self.backbone.classifier
 
     def extra_metrics(self, x: Tensor) -> Dict[str, float]:
         N, T, _ = x.shape
