@@ -111,3 +111,19 @@ temporal,single_digit_string_sum (test),0.648000,0.691132
 self_attention,single_digit_string_sum (test),0.949000,0.190944
 self_attention_qkv,single_digit_string_sum (test),0.934000,0.199821
 attention,single_digit_string_sum (test),0.946000,0.183072
+multilayer,sign_of_winner,0.825000,0.367905
+multilayer,sign_of_winner (test),0.825000,0.394221
+multilayer,sign_of_second_place,0.618000,0.630879
+multilayer,sign_of_second_place (test),0.593000,0.654382
+multilayer,has_pos_and_neg,0.882000,0.362863
+multilayer,has_pos_and_neg (test),0.862000,0.428747
+multilayer,has_all_tokens,0.500000,0.696189
+multilayer,has_all_tokens (test),0.500000,0.693227
+multilayer,any_abs_gt_one,0.919000,0.242470
+multilayer,any_abs_gt_one (test),0.893000,0.254830
+multilayer,single_digit_string_sum,0.500000,0.692867
+multilayer,single_digit_string_sum (test),0.500000,0.694439
+multilayer,single_digit_string_sum_swapped,0.500000,0.695438
+multilayer,single_digit_string_sum_swapped (test),0.500000,0.695444
+multilayer,multi_digit_sum,0.500000,0.695659
+multilayer,multi_digit_sum (test),0.500000,0.693554

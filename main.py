@@ -26,6 +26,7 @@ MODELS = [
     "self_attention_qkv",
     "self_attention_qkv_pos",
     "attention",
+    "multilayer",
 ]
 
 
