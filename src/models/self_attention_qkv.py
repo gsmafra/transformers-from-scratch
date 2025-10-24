@@ -25,8 +25,8 @@ class SelfAttentionQKVClassifier(Module):
         scores = torch.matmul(q, k.transpose(1, 2)) / (self.d_model ** 0.5)  # (N, T, T)
         attn = torch.softmax(scores, dim=2)  # (N, T, T)
         context = attn @ v  # (N, T, d)
+        context = torch.tanh(self.post_attn(context))  # (N, T, d)
         pooled = context.mean(dim=1)  # (N, d)
-        pooled = torch.tanh(self.post_attn(pooled))
         return self.classifier(pooled)
 
 

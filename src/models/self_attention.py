@@ -21,8 +21,8 @@ class SimpleSelfAttentionClassifier(Module):
         similarity = torch.matmul(hidden, hidden.transpose(1, 2)) / (self.d_model ** 0.5)  # (N, T, T)
         attn = torch.softmax(similarity, dim=2)  # (N, T, T)
         hidden_c = attn @ hidden  # (N, T, d)
+        hidden_c = torch.tanh(self.post_attn(hidden_c))  # (N, T, d)
         pooled = hidden_c.mean(dim=1)  # (N, d)
-        pooled = torch.tanh(self.post_attn(pooled))
         return self.classifier(pooled)
 
 

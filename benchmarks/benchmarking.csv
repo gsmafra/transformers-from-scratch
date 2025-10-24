@@ -36,10 +36,10 @@ mlp,multi_digit_sum,1.000000,0.001731
 temporal,multi_digit_sum,0.496000,0.716610
 self_attention,multi_digit_sum,0.500000,0.696775
 self_attention_qkv,multi_digit_sum,0.734000,0.534095
-self_attention_qkv_pos,multi_digit_sum,0.894000,0.301884
+self_attention_qkv_pos,multi_digit_sum,0.773000,0.478198
 attention,multi_digit_sum,0.573000,0.659059
 mlp,multi_digit_sum (test),0.627000,1.485012
-self_attention_qkv_pos,multi_digit_sum (test),0.475000,1.849180
+self_attention_qkv_pos,multi_digit_sum (test),0.514000,0.974439
 logreg,multi_digit_sum (test),0.500000,0.863440
 temporal,multi_digit_sum (test),0.493000,0.765367
 self_attention,multi_digit_sum (test),0.500000,0.700693

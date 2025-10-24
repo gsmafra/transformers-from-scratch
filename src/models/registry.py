@@ -5,6 +5,7 @@ from . import (
     LogRegAccess,
     MLPAccess,
     ModelAccess,
+    MultilayerAccess,
     SelfAttentionAccess,
     SelfAttentionQKVAccess,
     SelfAttentionQKVPosAccess,
@@ -25,6 +26,7 @@ def build_models(sequence_length: int, n_features: int, *, only: Iterable[str] |
         "self_attention_qkv": lambda: SelfAttentionQKVAccess(n_features=n_features),
         "self_attention_qkv_pos": lambda: SelfAttentionQKVPosAccess(n_features=n_features),
         "attention": lambda: AttentionAccess(n_features=n_features),
+        "multilayer": lambda: MultilayerAccess(n_features=n_features),
     }
 
     names = list(only) if only is not None else list(builders.keys())

@@ -63,13 +63,12 @@ class SelfAttentionQKVPosClassifier(Module):
         scores = torch.matmul(q, k.transpose(1, 2)) / (self.d_model ** 0.5)  # (N, T_eff, T_eff)
         attn = torch.softmax(scores, dim=2)  # (N, T_eff, T_eff)
         context = attn @ v  # (N, T_eff, d)
+        context = torch.tanh(self.post_attn(context))  # (N, T_eff, d)
 
         if self.use_cls_token:
             pooled = context[:, 0, :]  # (N, d)
         else:
             pooled = context.mean(dim=1)  # (N, d)
-
-        pooled = torch.tanh(self.post_attn(pooled))
         return self.classifier(pooled)
 
 

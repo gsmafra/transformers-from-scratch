@@ -21,8 +21,8 @@ class AttentionPoolingClassifier(Module):
         # Ablation: use mean over features as score (no learnable scorer)
         scores = torch.mean(hidden, dim=2)  # (N, T)
         attn = softmax(scores, dim=1)  # (N, T)
-        pooled = (attn.unsqueeze(-1) * hidden).sum(dim=1)  # (N, d)
-        pooled = tanh(self.post_attn(pooled))
+        hidden_mlp = tanh(self.post_attn(hidden))  # (N, T, d)
+        pooled = (attn.unsqueeze(-1) * hidden_mlp).sum(dim=1)  # (N, d)
         return self.classifier(pooled)  # (N, 1)
 
 
