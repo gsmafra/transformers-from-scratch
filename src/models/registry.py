@@ -1,14 +1,13 @@
 from typing import Dict, Iterable
 
 from . import (
-    AttentionAccess,
+    BahdanauAttentionAccess,
     LogRegAccess,
     MLPAccess,
     ModelAccess,
-    MultilayerAccess,
+    MultilayerTransformerAccess,
     SelfAttentionAccess,
-    SelfAttentionQKVAccess,
-    SelfAttentionQKVPosAccess,
+    SingleLayerTransformerAccess,
     TemporalAccess,
 )
 
@@ -23,10 +22,9 @@ def build_models(sequence_length: int, n_features: int, *, only: Iterable[str] |
         "mlp": lambda: MLPAccess(sequence_length=sequence_length, n_features=n_features),
         "temporal": lambda: TemporalAccess(sequence_length=sequence_length, n_features=n_features),
         "self_attention": lambda: SelfAttentionAccess(n_features=n_features),
-        "self_attention_qkv": lambda: SelfAttentionQKVAccess(n_features=n_features),
-        "self_attention_qkv_pos": lambda: SelfAttentionQKVPosAccess(n_features=n_features),
-        "attention": lambda: AttentionAccess(n_features=n_features),
-        "multilayer": lambda: MultilayerAccess(n_features=n_features),
+        "singlelayer_transformer": lambda: SingleLayerTransformerAccess(n_features=n_features),
+        "bahdanau_attention": lambda: BahdanauAttentionAccess(n_features=n_features),
+        "multilayer_transformer": lambda: MultilayerTransformerAccess(n_features=n_features),
     }
 
     names = list(only) if only is not None else list(builders.keys())

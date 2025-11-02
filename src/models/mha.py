@@ -50,4 +50,3 @@ class MultiHeadSelfAttention(Module):
         self.last_logits = logits.detach()
         self.last_attn = attn.detach()
         return out
-

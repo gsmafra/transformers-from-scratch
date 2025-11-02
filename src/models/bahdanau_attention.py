@@ -8,7 +8,7 @@ from .base import ModelAccess
 from .metrics import summarize_stats
 
 
-class AttentionPoolingClassifier(Module):
+class BahdanauAttentionClassifier(Module):
     def __init__(self, n_features: int = 2, d_model: int = 16) -> None:
         super().__init__()
         self.proj = Linear(n_features, d_model)
@@ -26,15 +26,15 @@ class AttentionPoolingClassifier(Module):
         return self.classifier(pooled)  # (N, 1)
 
 
-class AttentionAccess(ModelAccess):
+class BahdanauAttentionAccess(ModelAccess):
     D_MODEL = 16
     LR_START = 0.5
     LR_END = 0.1
 
     def __init__(self, n_features: int) -> None:
         super().__init__(
-            name="attention",
-            backbone=AttentionPoolingClassifier(n_features=n_features, d_model=self.D_MODEL),
+            name="bahdanau_attention",
+            backbone=BahdanauAttentionClassifier(n_features=n_features, d_model=self.D_MODEL),
             lr_start=self.LR_START,
             lr_end=self.LR_END,
         )

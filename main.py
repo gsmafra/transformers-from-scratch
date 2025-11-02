@@ -25,10 +25,9 @@ MODELS = [
     "mlp",
     "temporal",
     "self_attention",
-    "self_attention_qkv",
-    "self_attention_qkv_pos",
-    "attention",
-    "multilayer",
+    "singlelayer_transformer",
+    "bahdanau_attention",
+    "multilayer_transformer",
 ]
 
 

@@ -1,22 +1,20 @@
-from .attention import AttentionAccess
+from .bahdanau_attention import BahdanauAttentionAccess
 from .base import ModelAccess
 from .logreg import LogRegAccess
 from .mlp import MLPAccess
-from .multilayer import MultilayerAccess
+from .multilayer_transformer import MultilayerTransformerAccess
 from .self_attention import SelfAttentionAccess
-from .self_attention_qkv import SelfAttentionQKVAccess
-from .self_attention_qkv_pos import SelfAttentionQKVPosAccess
+from .singlelayer_transformer import SingleLayerTransformerAccess
 from .temporal import SimpleTemporalPoolingClassifier, TemporalAccess  # kept for completeness
 
 __all__ = [
     "ModelAccess",
     "LogRegAccess",
     "MLPAccess",
-    "AttentionAccess",
-    "MultilayerAccess",
+    "BahdanauAttentionAccess",
+    "MultilayerTransformerAccess",
     "SelfAttentionAccess",
-    "SelfAttentionQKVAccess",
-    "SelfAttentionQKVPosAccess",
+    "SingleLayerTransformerAccess",
     "TemporalAccess",
     "SimpleTemporalPoolingClassifier",
 ]

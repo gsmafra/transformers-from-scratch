@@ -1,16 +1,16 @@
 model,task,accuracy,loss
 logreg,sign_of_second_place,0.674000,0.609500
 self_attention,sign_of_second_place,0.886000,0.271630
-attention,sign_of_second_place,0.868000,0.256842
+bahdanau_attention,sign_of_second_place,0.868000,0.256842
 logreg,sign_of_winner,0.841000,0.376541
 self_attention,sign_of_winner,0.947000,0.146320
-attention,sign_of_winner,0.977000,0.072478
+bahdanau_attention,sign_of_winner,0.977000,0.072478
 logreg,has_all_tokens,0.536000,0.755209
 self_attention,has_all_tokens,1.000000,0.001027
-attention,has_all_tokens,1.000000,0.000995
+bahdanau_attention,has_all_tokens,1.000000,0.000995
 logreg,has_pos_and_neg,0.521000,0.778220
 self_attention,has_pos_and_neg,0.987000,0.036495
-attention,has_pos_and_neg,0.992000,0.025358
+bahdanau_attention,has_pos_and_neg,0.992000,0.025358
 temporal,has_all_tokens,0.522000,0.691417
 temporal,has_pos_and_neg,0.578000,0.681094
 temporal,sign_of_winner,0.915000,0.212080
@@ -18,112 +18,96 @@ temporal,sign_of_second_place,0.746000,0.516198
 logreg,any_abs_gt_one,0.496000,0.755282
 temporal,any_abs_gt_one,0.953000,0.165036
 self_attention,any_abs_gt_one,0.974000,0.102223
-attention,any_abs_gt_one,0.988000,0.076773
+bahdanau_attention,any_abs_gt_one,0.988000,0.076773
 logreg,single_digit_string_sum,0.615000,0.679450
 temporal,single_digit_string_sum,0.653000,0.681498
 self_attention,single_digit_string_sum,0.957000,0.128359
-attention,single_digit_string_sum,0.954000,0.146298
-self_attention_qkv,single_digit_string_sum,0.931000,0.172636
+bahdanau_attention,single_digit_string_sum,0.954000,0.146298
 logreg,single_digit_string_sum_swapped,0.603000,0.747911
 temporal,single_digit_string_sum_swapped,0.614000,0.665310
 self_attention,single_digit_string_sum_swapped,0.841000,0.226305
-self_attention_qkv,single_digit_string_sum_swapped,0.963000,0.113421
-attention,single_digit_string_sum_swapped,0.965000,0.115967
+bahdanau_attention,single_digit_string_sum_swapped,0.965000,0.115967
 mlp,single_digit_string_sum_swapped,1.000000,0.002200
-self_attention_qkv_pos,single_digit_string_sum_swapped,1.000000,0.003240
+singlelayer_transformer,single_digit_string_sum_swapped,1.000000,0.003240
 logreg,multi_digit_sum,0.568000,0.878451
 mlp,multi_digit_sum,1.000000,0.001731
 temporal,multi_digit_sum,0.496000,0.716610
 self_attention,multi_digit_sum,0.500000,0.696775
-self_attention_qkv,multi_digit_sum,0.734000,0.534095
-self_attention_qkv_pos,multi_digit_sum,0.773000,0.478198
-attention,multi_digit_sum,0.573000,0.659059
+singlelayer_transformer,multi_digit_sum,0.773000,0.478198
+bahdanau_attention,multi_digit_sum,0.573000,0.659059
 mlp,multi_digit_sum (test),0.627000,1.485012
-self_attention_qkv_pos,multi_digit_sum (test),0.514000,0.974439
+singlelayer_transformer,multi_digit_sum (test),0.514000,0.974439
 logreg,multi_digit_sum (test),0.494000,0.821235
 temporal,multi_digit_sum (test),0.493000,0.765367
 self_attention,multi_digit_sum (test),0.500000,0.700693
-self_attention_qkv,multi_digit_sum (test),0.499000,0.915769
-attention,multi_digit_sum (test),0.498000,0.804800
+bahdanau_attention,multi_digit_sum (test),0.498000,0.804800
 logreg,sign_of_winner (test),0.810000,0.436456
 mlp,sign_of_winner,1.000000,0.006036
 mlp,sign_of_winner (test),0.867000,0.610313
 temporal,sign_of_winner (test),0.892000,0.272523
 self_attention,sign_of_winner (test),0.922000,0.209482
-self_attention_qkv,sign_of_winner,0.979000,0.066818
-self_attention_qkv,sign_of_winner (test),0.953000,0.103862
-self_attention_qkv_pos,sign_of_winner,0.903000,0.197904
-self_attention_qkv_pos,sign_of_winner (test),0.908000,0.241376
-attention,sign_of_winner (test),0.958000,0.092595
+singlelayer_transformer,sign_of_winner,0.903000,0.197904
+singlelayer_transformer,sign_of_winner (test),0.908000,0.241376
+bahdanau_attention,sign_of_winner (test),0.958000,0.092595
 logreg,single_digit_string_sum_swapped (test),0.548000,0.763987
 mlp,single_digit_string_sum_swapped (test),0.948000,0.224002
 temporal,single_digit_string_sum_swapped (test),0.608000,0.670840
 self_attention,single_digit_string_sum_swapped (test),0.816000,0.269212
-self_attention_qkv,single_digit_string_sum_swapped (test),0.961000,0.137857
-self_attention_qkv_pos,single_digit_string_sum_swapped (test),0.976000,0.113591
-attention,single_digit_string_sum_swapped (test),0.957000,0.128181
-self_attention_qkv_pos,sign_of_second_place,0.745000,0.490861
-self_attention_qkv_pos,sign_of_second_place (test),0.716000,0.549124
-self_attention_qkv_pos,has_pos_and_neg,0.906000,0.232696
-self_attention_qkv_pos,has_pos_and_neg (test),0.882000,0.302329
-self_attention_qkv_pos,has_all_tokens,1.000000,0.000010
-self_attention_qkv_pos,has_all_tokens (test),1.000000,0.000007
-self_attention_qkv_pos,any_abs_gt_one,0.871000,0.310616
-self_attention_qkv_pos,any_abs_gt_one (test),0.823000,0.430234
-self_attention_qkv_pos,single_digit_string_sum,1.000000,0.002953
-self_attention_qkv_pos,single_digit_string_sum (test),0.986000,0.077774
+singlelayer_transformer,single_digit_string_sum_swapped (test),0.976000,0.113591
+bahdanau_attention,single_digit_string_sum_swapped (test),0.957000,0.128181
+singlelayer_transformer,sign_of_second_place,0.745000,0.490861
+singlelayer_transformer,sign_of_second_place (test),0.716000,0.549124
+singlelayer_transformer,has_pos_and_neg,0.906000,0.232696
+singlelayer_transformer,has_pos_and_neg (test),0.882000,0.302329
+singlelayer_transformer,has_all_tokens,1.000000,0.000010
+singlelayer_transformer,has_all_tokens (test),1.000000,0.000007
+singlelayer_transformer,any_abs_gt_one,0.871000,0.310616
+singlelayer_transformer,any_abs_gt_one (test),0.823000,0.430234
+singlelayer_transformer,single_digit_string_sum,1.000000,0.002953
+singlelayer_transformer,single_digit_string_sum (test),0.986000,0.077774
 logreg,sign_of_second_place (test),0.651000,0.627245
 mlp,sign_of_second_place,0.920000,0.231670
 mlp,sign_of_second_place (test),0.680000,1.054992
 temporal,sign_of_second_place (test),0.693000,0.560821
 self_attention,sign_of_second_place (test),0.822000,0.405639
-self_attention_qkv,sign_of_second_place,0.932000,0.231810
-self_attention_qkv,sign_of_second_place (test),0.847000,0.363764
-attention,sign_of_second_place (test),0.841000,0.402727
+bahdanau_attention,sign_of_second_place (test),0.841000,0.402727
 logreg,has_pos_and_neg (test),0.463000,0.748192
 mlp,has_pos_and_neg,1.000000,0.014357
 mlp,has_pos_and_neg (test),0.867000,0.587259
 temporal,has_pos_and_neg (test),0.495000,0.720257
 self_attention,has_pos_and_neg (test),0.984000,0.055607
-self_attention_qkv,has_pos_and_neg,0.997000,0.021989
-self_attention_qkv,has_pos_and_neg (test),0.988000,0.034805
-attention,has_pos_and_neg (test),0.985000,0.040103
+bahdanau_attention,has_pos_and_neg (test),0.985000,0.040103
 logreg,has_all_tokens (test),0.514000,0.748658
 mlp,has_all_tokens,1.000000,0.000048
 mlp,has_all_tokens (test),1.000000,0.000101
 temporal,has_all_tokens (test),0.502000,0.700072
 self_attention,has_all_tokens (test),1.000000,0.001088
-self_attention_qkv,has_all_tokens,0.671000,0.485369
-self_attention_qkv,has_all_tokens (test),0.668000,0.500750
-attention,has_all_tokens (test),1.000000,0.001042
+bahdanau_attention,has_all_tokens (test),1.000000,0.001042
 logreg,any_abs_gt_one (test),0.460000,0.720787
 mlp,any_abs_gt_one,1.000000,0.007196
 mlp,any_abs_gt_one (test),0.790000,0.829142
 temporal,any_abs_gt_one (test),0.943000,0.166000
 self_attention,any_abs_gt_one (test),0.975000,0.085042
-self_attention_qkv,any_abs_gt_one,0.986000,0.066889
-self_attention_qkv,any_abs_gt_one (test),0.976000,0.090580
-attention,any_abs_gt_one (test),0.963000,0.096162
+bahdanau_attention,any_abs_gt_one (test),0.963000,0.096162
 logreg,single_digit_string_sum (test),0.584000,0.685937
 mlp,single_digit_string_sum,1.000000,0.000046
 mlp,single_digit_string_sum (test),0.996000,0.008432
 temporal,single_digit_string_sum (test),0.648000,0.691132
 self_attention,single_digit_string_sum (test),0.949000,0.190944
-self_attention_qkv,single_digit_string_sum (test),0.934000,0.199821
-attention,single_digit_string_sum (test),0.946000,0.183072
-multilayer,sign_of_winner,0.999000,0.011313
-multilayer,sign_of_winner (test),0.989000,0.017247
-multilayer,sign_of_second_place,0.997000,0.032178
-multilayer,sign_of_second_place (test),0.668000,2.185636
-multilayer,has_pos_and_neg,1.000000,0.000007
-multilayer,has_pos_and_neg (test),0.985000,0.110808
-multilayer,has_all_tokens,1.000000,0.000005
-multilayer,has_all_tokens (test),1.000000,0.000006
-multilayer,any_abs_gt_one,1.000000,0.000057
-multilayer,any_abs_gt_one (test),0.958000,0.306747
-multilayer,single_digit_string_sum,0.990000,0.042160
-multilayer,single_digit_string_sum (test),0.969000,0.100411
-multilayer,single_digit_string_sum_swapped,0.998000,0.012087
-multilayer,single_digit_string_sum_swapped (test),0.988000,0.066149
-multilayer,multi_digit_sum,1.000000,0.000040
-multilayer,multi_digit_sum (test),0.488000,7.698397
+bahdanau_attention,single_digit_string_sum (test),0.946000,0.183072
+multilayer_transformer,sign_of_winner,0.999000,0.011313
+multilayer_transformer,sign_of_winner (test),0.989000,0.017247
+multilayer_transformer,sign_of_second_place,0.997000,0.032178
+multilayer_transformer,sign_of_second_place (test),0.668000,2.185636
+multilayer_transformer,has_pos_and_neg,1.000000,0.000007
+multilayer_transformer,has_pos_and_neg (test),0.985000,0.110808
+multilayer_transformer,has_all_tokens,1.000000,0.000005
+multilayer_transformer,has_all_tokens (test),1.000000,0.000006
+multilayer_transformer,any_abs_gt_one,1.000000,0.000057
+multilayer_transformer,any_abs_gt_one (test),0.958000,0.306747
+multilayer_transformer,single_digit_string_sum,0.990000,0.042160
+multilayer_transformer,single_digit_string_sum (test),0.969000,0.100411
+multilayer_transformer,single_digit_string_sum_swapped,0.998000,0.012087
+multilayer_transformer,single_digit_string_sum_swapped (test),0.988000,0.066149
+multilayer_transformer,multi_digit_sum,1.000000,0.000040
+multilayer_transformer,multi_digit_sum (test),0.488000,7.698397

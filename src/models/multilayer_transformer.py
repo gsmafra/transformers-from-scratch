@@ -34,7 +34,7 @@ def _combine_heads(x: Tensor) -> Tensor:
     return x.transpose(1, 2).contiguous().view(N, T, H * dk)
 
 
-class TransformerClassifier(Module):
+class MultilayerTransformerClassifier(Module):
     def __init__(self, n_features: int = 12, d_model: int = 16, pe_scale: float = 0.1, n_heads: int = 1) -> None:
         super().__init__()
         self.d_model = d_model
@@ -80,7 +80,7 @@ class TransformerClassifier(Module):
         return self.classifier(cls_repr)
 
 
-class MultilayerAccess(ModelAccess):
+class MultilayerTransformerAccess(ModelAccess):
     D_MODEL = 16
     LR_START = 0.004
     LR_END = 0.002
@@ -88,8 +88,8 @@ class MultilayerAccess(ModelAccess):
 
     def __init__(self, n_features: int) -> None:
         super().__init__(
-            name="multilayer",
-            backbone=TransformerClassifier(n_features=n_features, d_model=self.D_MODEL, n_heads=self.N_HEADS),
+            name="multilayer_transformer",
+            backbone=MultilayerTransformerClassifier(n_features=n_features, d_model=self.D_MODEL, n_heads=self.N_HEADS),
             lr_start=self.LR_START,
             lr_end=self.LR_END,
         )
