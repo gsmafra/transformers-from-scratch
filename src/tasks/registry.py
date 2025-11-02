@@ -2,8 +2,8 @@ from .any_abs_gt_one import AnyAbsGreaterThanOneTask
 from .has_all_tokens import HasAllTokensTask
 from .has_pos_and_neg import HasPosAndNegTask
 from .sign_of_second_place import SignOfSecondPlaceTask
-from .single_digit_string_sum import SingleDigitStringSumTask
-from .single_digit_string_sum_swapped import SingleDigitStringSumSwappedTask
+from .single_digit_sum import SingleDigitSumTask
+from .single_digit_sum_swapped import SingleDigitSumSwappedTask
 from .multi_digit_sum import MultiDigitSumTask
 from .sign_of_winner import SignOfWinnerTask
 
@@ -17,8 +17,8 @@ TASK_REGISTRY = {
     "has_pos_and_neg": HasPosAndNegTask(),
     "has_all_tokens": HasAllTokensTask(),
     "any_abs_gt_one": AnyAbsGreaterThanOneTask(),
-    "single_digit_string_sum": SingleDigitStringSumTask(),
-    "single_digit_string_sum_swapped": SingleDigitStringSumSwappedTask(),
+    "single_digit_sum": SingleDigitSumTask(),
+    "single_digit_sum_swapped": SingleDigitSumSwappedTask(),
     "multi_digit_sum": MultiDigitSumTask(),
 }
 

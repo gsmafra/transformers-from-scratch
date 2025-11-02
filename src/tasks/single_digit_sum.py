@@ -12,7 +12,7 @@ from .arithmetic_common import (
 from .base import Task
 
 
-class SingleDigitStringSumTask(Task):
+class SingleDigitSumTask(Task):
     feature_dim: int = len(_TOKENS)
 
     def label(self, x: Tensor) -> Tensor:

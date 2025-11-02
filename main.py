@@ -16,8 +16,8 @@ TASKS = [
     "has_pos_and_neg",
     "has_all_tokens",
     "any_abs_gt_one",
-    "single_digit_string_sum",
-    "single_digit_string_sum_swapped",
+    "single_digit_sum",
+    "single_digit_sum_swapped",
     "multi_digit_sum",
 ]
 MODELS = [
