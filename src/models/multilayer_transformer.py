@@ -7,7 +7,7 @@ from torch.nn import Linear, Module, LayerNorm
 
 from .base import ModelAccess
 from .metrics import summarize_stats
-from .mha import MultiHeadSelfAttention
+from .transformer_block import TransformerBlock
 
 
 def sinusoidal_positional_encoding(T: int, d_model: int) -> Tensor:
@@ -19,19 +19,6 @@ def sinusoidal_positional_encoding(T: int, d_model: int) -> Tensor:
     pe[:, 0::2] = torch.sin(angles[:, 0::2])
     pe[:, 1::2] = torch.cos(angles[:, 1::2])
     return pe
-
-
-def _split_heads(x: Tensor, n_heads: int) -> Tensor:
-    """Reshape (N,T,C) -> (N,H,T,dk) with dk=C//H, then swap to heads-first."""
-    N, T, C = x.shape
-    dk = C // n_heads
-    return x.view(N, T, n_heads, dk).transpose(1, 2)
-
-
-def _combine_heads(x: Tensor) -> Tensor:
-    """Reshape (N,H,T,dk) -> (N,T,C) combining heads back to channels."""
-    N, H, T, dk = x.shape
-    return x.transpose(1, 2).contiguous().view(N, T, H * dk)
 
 
 class MultilayerTransformerClassifier(Module):
@@ -46,14 +33,8 @@ class MultilayerTransformerClassifier(Module):
         self.in_proj = Linear(n_features, d_model)
         # Learnable CLS token in model space
         self.cls_token = torch.nn.Parameter(torch.zeros(1, 1, d_model))
-        # Pre-norm layers
-        self.ln1 = LayerNorm(d_model)
-        self.ln2 = LayerNorm(d_model)
-        # Multi-head attention layers + position-wise MLPs
-        self.mha1 = MultiHeadSelfAttention(d_model=d_model, n_heads=self.n_heads)
-        self.post1 = Linear(d_model, d_model)
-        self.mha2 = MultiHeadSelfAttention(d_model=d_model, n_heads=self.n_heads)
-        self.post2 = Linear(d_model, d_model)
+        self.block1 = TransformerBlock(d_model=d_model, n_heads=self.n_heads, expansion=4)
+        self.block2 = TransformerBlock(d_model=d_model, n_heads=self.n_heads, expansion=4)
         # Classifier
         self.classifier = Linear(d_model, 1)
 
@@ -65,26 +46,18 @@ class MultilayerTransformerClassifier(Module):
         z0_with_cls = torch.cat([cls, z0], dim=1)
         pe1 = sinusoidal_positional_encoding(T + 1, self.d_model).unsqueeze(0)
         x1 = z0_with_cls + self.pe_scale * pe1
-        x1n = self.ln1(x1)
-        c1 = self.mha1(x1n)
-        h1 = F.gelu(self.post1(c1))
-        x1_out = x1 + h1
-
-        x2 = x1_out
-        x2n = self.ln2(x2)
-        c2 = self.mha2(x2n)
-        h2 = F.gelu(self.post2(c2))
-        x2_out = x2 + h2
+        x1_out = self.block1(x1)
+        x2_out = self.block2(x1_out)
 
         cls_repr = x2_out[:, 0, :]
         return self.classifier(cls_repr)
 
 
 class MultilayerTransformerAccess(ModelAccess):
-    D_MODEL = 16
+    D_MODEL = 32
     LR_START = 0.004
     LR_END = 0.002
-    N_HEADS = 2
+    N_HEADS = 4
 
     def __init__(self, n_features: int) -> None:
         super().__init__(
@@ -98,6 +71,10 @@ class MultilayerTransformerAccess(ModelAccess):
         return self.backbone.classifier
 
     def extra_metrics(self, x: Tensor) -> Dict[str, float]:
-        # Summarize the most recent first-layer attention logits captured during forward
-        logits = self.backbone.mha1.last_logits if self.backbone.mha1.last_logits is not None else torch.empty(0)
+        # Summarize the most recent first block attention logits captured during forward
+        logits = (
+            self.backbone.block1.mha.last_logits
+            if getattr(self.backbone.block1.mha, "last_logits", None) is not None
+            else torch.empty(0)
+        )
         return summarize_stats("attn_logits", logits)
