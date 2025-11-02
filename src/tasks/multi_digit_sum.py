@@ -74,7 +74,7 @@ class MultiDigitSumTask(Task):
 
         idx = x.argmax(dim=2)  # (N, T)
         N = idx.size(0)
-        out = torch.zeros(N, dtype=torch.float32, device=idx.device)
+        out = torch.zeros(N, dtype=torch.float32)
 
         for i in range(N):
             row = idx[i]

@@ -8,12 +8,12 @@ from .base import ModelAccess
 from .metrics import summarize_stats
 
 
-def sinusoidal_positional_encoding(T: int, d_model: int, device=None) -> Tensor:
-    pos = torch.arange(T, dtype=torch.float32, device=device).unsqueeze(1)
-    i = torch.arange(d_model, dtype=torch.float32, device=device).unsqueeze(0)
+def sinusoidal_positional_encoding(T: int, d_model: int) -> Tensor:
+    pos = torch.arange(T, dtype=torch.float32).unsqueeze(1)
+    i = torch.arange(d_model, dtype=torch.float32).unsqueeze(0)
     denom = torch.pow(10000.0, (2 * (i // 2)) / float(d_model))
     angles = pos / denom
-    pe = torch.empty(T, d_model, dtype=torch.float32, device=device)
+    pe = torch.empty(T, d_model, dtype=torch.float32)
     pe[:, 0::2] = torch.sin(angles[:, 0::2])
     pe[:, 1::2] = torch.cos(angles[:, 1::2])
     return pe
@@ -47,7 +47,7 @@ class TwoLayerSelfAttentionQKVPosClassifier(Module):
         N, T, _ = x_in.shape
         # Project input to model space, then add PE and pre-norm
         z0 = self.in_proj(x_in)
-        pe1 = sinusoidal_positional_encoding(T, self.d_model, device=x_in.device).unsqueeze(0)
+        pe1 = sinusoidal_positional_encoding(T, self.d_model).unsqueeze(0)
         x1 = z0 + self.pe_scale * pe1
         x1n = self.ln1(x1)
         q1 = self.q1(x1n)
@@ -60,7 +60,7 @@ class TwoLayerSelfAttentionQKVPosClassifier(Module):
         x1_out = x1 + h1
 
         # Layer 2: add PE in model space
-        pe2 = sinusoidal_positional_encoding(T, self.d_model, device=x_in.device).unsqueeze(0)
+        pe2 = sinusoidal_positional_encoding(T, self.d_model).unsqueeze(0)
         x2 = x1_out + self.pe_scale * pe2
         x2n = self.ln2(x2)
         q2 = self.q2(x2n)
@@ -96,7 +96,7 @@ class MultilayerAccess(ModelAccess):
         # Report first-layer attention logits on current input with PE1
         N, T, _ = x.shape
         z0 = self.backbone.in_proj(x)
-        pe1 = sinusoidal_positional_encoding(T, self.backbone.d_model, device=x.device).unsqueeze(0)
+        pe1 = sinusoidal_positional_encoding(T, self.backbone.d_model).unsqueeze(0)
         x1 = z0 + self.backbone.pe_scale * pe1
         x1n = self.backbone.ln1(x1)
         q1 = self.backbone.q1(x1n)

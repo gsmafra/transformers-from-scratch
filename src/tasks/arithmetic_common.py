@@ -9,7 +9,7 @@ TOK2IDX: Dict[str, int] = {ch: i for i, ch in enumerate(TOKENS)}
 
 
 def one_hot(indices: Tensor, vocab_size: int) -> Tensor:
-    out = torch.zeros(indices.size(0), indices.size(1), vocab_size, dtype=torch.float32, device=indices.device)
+    out = torch.zeros(indices.size(0), indices.size(1), vocab_size, dtype=torch.float32)
     out.scatter_(2, indices.unsqueeze(-1).long(), 1.0)
     return out
 
@@ -36,7 +36,7 @@ def label_equations_from_indices(idx: Tensor, allowed_forms: Sequence[Tuple[int,
     b_val = b.clamp_max(9).to(torch.long)
     c_val = c.clamp_max(9).to(torch.long)
 
-    out = torch.zeros(idx.size(0), dtype=torch.float32, device=idx.device)
+    out = torch.zeros(idx.size(0), dtype=torch.float32)
     for f in allowed_forms:
         if f == FORM_A_PLUS_B_EQ_C:
             form_mask = op1.eq(TOK2IDX["+"]) & op2.eq(TOK2IDX["="])

@@ -8,12 +8,12 @@ from .base import ModelAccess
 from .metrics import summarize_stats
 
 
-def sinusoidal_positional_encoding(T: int, d_model: int, device=None) -> Tensor:
-    pos = torch.arange(T, dtype=torch.float32, device=device).unsqueeze(1)  # (T, 1)
-    i = torch.arange(d_model, dtype=torch.float32, device=device).unsqueeze(0)  # (1, d)
+def sinusoidal_positional_encoding(T: int, d_model: int) -> Tensor:
+    pos = torch.arange(T, dtype=torch.float32).unsqueeze(1)  # (T, 1)
+    i = torch.arange(d_model, dtype=torch.float32).unsqueeze(0)  # (1, d)
     denom = torch.pow(10000.0, (2 * (i // 2)) / float(d_model))  # (1, d)
     angles = pos / denom  # (T, d)
-    pe = torch.empty(T, d_model, dtype=torch.float32, device=device)
+    pe = torch.empty(T, d_model, dtype=torch.float32)
     pe[:, 0::2] = torch.sin(angles[:, 0::2])
     pe[:, 1::2] = torch.cos(angles[:, 1::2])
     return pe
@@ -54,7 +54,7 @@ class SelfAttentionQKVPosClassifier(Module):
             T_eff = T
 
         # Add positional encoding in input space before projections
-        pe_in = sinusoidal_positional_encoding(T_eff, self.n_features, device=x_in.device).unsqueeze(0)  # (1, T_eff, F)
+        pe_in = sinusoidal_positional_encoding(T_eff, self.n_features).unsqueeze(0)  # (1, T_eff, F)
         x_plus = x_work + self.pe_scale * pe_in
 
         q = self.q_proj(x_plus)  # (N, T_eff, d)
@@ -99,7 +99,7 @@ class SelfAttentionQKVPosAccess(ModelAccess):
         else:
             x_work = x
             T_eff = T
-        pe_in = sinusoidal_positional_encoding(T_eff, self.backbone.n_features, device=x.device).unsqueeze(0)
+        pe_in = sinusoidal_positional_encoding(T_eff, self.backbone.n_features).unsqueeze(0)
         x_plus = x_work + self.backbone.pe_scale * pe_in
         q = self.backbone.q_proj(x_plus)
         k = self.backbone.k_proj(x_plus)
