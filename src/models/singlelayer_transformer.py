@@ -6,6 +6,7 @@ from torch.nn import Linear, Module
 
 from .base import ModelAccess
 from .metrics import summarize_stats
+from .mha import MultiHeadSelfAttention
 
 
 def sinusoidal_positional_encoding(T: int, d_model: int) -> Tensor:
@@ -25,16 +26,19 @@ class SingleLayerTransformerClassifier(Module):
         n_features: int = 2,
         d_model: int = 16,
         pe_scale: float = 0.1,
+        n_heads: int = 1,
     ) -> None:
         super().__init__()
         self.d_model = d_model
         self.n_features = n_features
         self.pe_scale = float(pe_scale)
-        self.q_proj = Linear(n_features, d_model)
-        self.k_proj = Linear(n_features, d_model)
-        self.v_proj = Linear(n_features, d_model)
+        self.n_heads = int(n_heads)
+        # Project inputs from feature space to model space
+        self.in_proj = Linear(n_features, d_model)
         # Learnable [CLS] token in input feature space (same dimensionality as x_in features)
         self.cls_token = torch.nn.Parameter(torch.zeros(n_features))
+        # Multi-head self-attention in model space
+        self.mha = MultiHeadSelfAttention(d_model=d_model, n_heads=self.n_heads)
         self.post_attn = Linear(d_model, d_model)
         self.classifier = Linear(d_model, 1)
 
@@ -45,16 +49,11 @@ class SingleLayerTransformerClassifier(Module):
         x_work = torch.cat([cls, x_in], dim=1)  # (N, T+1, F)
         T_eff = T + 1
 
-        # Add positional encoding in input space before projections
+        # Add positional encoding in input space, then project to model space and apply MHA
         pe_in = sinusoidal_positional_encoding(T_eff, self.n_features).unsqueeze(0)  # (1, T_eff, F)
         x_plus = x_work + self.pe_scale * pe_in
-
-        q = self.q_proj(x_plus)  # (N, T_eff, d)
-        k = self.k_proj(x_plus)  # (N, T_eff, d)
-        v = self.v_proj(x_plus)  # (N, T_eff, d)
-        scores = torch.matmul(q, k.transpose(1, 2)) / (self.d_model ** 0.5)  # (N, T_eff, T_eff)
-        attn = torch.softmax(scores, dim=2)  # (N, T_eff, T_eff)
-        context = attn @ v  # (N, T_eff, d)
+        z = self.in_proj(x_plus)  # (N, T_eff, d)
+        context = self.mha(z)  # (N, T_eff, d)
         context = torch.tanh(self.post_attn(context))  # (N, T_eff, d)
 
         pooled = context[:, 0, :]  # (N, d)
@@ -78,13 +77,6 @@ class SingleLayerTransformerAccess(ModelAccess):
         return self.backbone.classifier
 
     def extra_metrics(self, x: Tensor) -> Dict[str, float]:
-        N, T, _ = x.shape
-        cls = self.backbone.cls_token.view(1, 1, -1).expand(N, 1, -1)
-        x_work = torch.cat([cls, x], dim=1)
-        T_eff = T + 1
-        pe_in = sinusoidal_positional_encoding(T_eff, self.backbone.n_features).unsqueeze(0)
-        x_plus = x_work + self.backbone.pe_scale * pe_in
-        q = self.backbone.q_proj(x_plus)
-        k = self.backbone.k_proj(x_plus)
-        logits = torch.matmul(q, k.transpose(1, 2)) / (self.backbone.d_model ** 0.5)
+        # Summarize most recent attention logits captured during forward
+        logits = self.backbone.mha.last_logits if self.backbone.mha.last_logits is not None else torch.empty(0)
         return summarize_stats("attn_logits", logits)
