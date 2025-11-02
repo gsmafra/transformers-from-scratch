@@ -8,11 +8,16 @@ from tqdm import trange, tqdm
 from wandb.sdk.wandb_run import Run as WandbRun
 
 from .reporting.export import export_model_readable_html
+from .benchmarking.csv import update_benchmark_csv
+from .benchmarking.html import generate_benchmark_html
+from .reporting.report import generate_run_report
+from .reporting.wandb_init import init_wandb
 from .models import ModelAccess
 from .models.registry import build_models
 from .tasks import prepare_data
 from .tasks.arithmetic_common import TOKENS as ARITH_TOKENS
 from .reporting.training_logger import TrainingLogger
+from .benchmarking.overlap import update_overlap_csv
 
 
 def train_model(
@@ -168,4 +173,45 @@ def run_training(
         # Use wrapper name to key results to avoid mismatch
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
 
+    update_overlap_csv(task=task, x=x, x_test=x_test)
+    run.finish()
+
     return results
+
+
+def run_all_tasks_and_reports(
+    *,
+    n_samples: int,
+    seed: int,
+    tasks: list[str],
+    model_names: list[str],
+) -> None:
+    """Top-level orchestration: train all tasks, write CSVs/HTML, and reports.
+
+    Keeps `main.py` minimal by handling loops, logging, and artifacts here.
+    """
+    for task in trange(len(tasks), desc="tasks", leave=False):
+        task_name = tasks[task]
+        project_name = f"transformer-scratchpad-{task_name}"
+        run = init_wandb(project=project_name, model_names=model_names)
+
+        run_artifacts = run_training(
+            n_samples=n_samples,
+            seed=seed,
+            run=run,
+            task=task_name,
+            model_names=model_names,
+        )
+
+        for name, artifacts in run_artifacts.items():
+            generate_run_report(run, artifacts, prefix=name)
+
+        run.finish()
+
+        update_benchmark_csv(task=task_name, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
+
+    generate_benchmark_html(
+        csv_path="benchmarks/benchmarking.csv",
+        html_path="benchmarks/index.html",
+        overlap_csv_path="benchmarks/overlap.csv",
+    )

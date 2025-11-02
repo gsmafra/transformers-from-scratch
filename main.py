@@ -1,11 +1,4 @@
-from src.benchmarking.csv import update_benchmark_csv
-from src.benchmarking.overlap import update_overlap_csv
-from src.benchmarking.html import generate_benchmark_html
-from src.reporting.report import generate_run_report
-from src.training import run_training
-from src.reporting.wandb_init import init_wandb
-from tqdm import tqdm
-from src.tasks import prepare_data
+from src.training import run_all_tasks_and_reports
 
 
 N_SAMPLES = 1000
@@ -32,33 +25,12 @@ MODELS = [
 
 
 def main():
-    # Run all configured tasks × models
-    for task in tqdm(TASKS, desc="tasks"):
-        project_name = f"transformer-scratchpad-{task}"
-        run = init_wandb(project=project_name, model_names=MODELS)
-
-        run_artifacts = run_training(
-            n_samples=N_SAMPLES,
-            seed=0,
-            run=run,
-            task=task,
-            model_names=MODELS,
-        )
-
-        # Generate eval/report panels under each model prefix
-        for name, artifacts in run_artifacts.items():
-            generate_run_report(run, artifacts, prefix=name)
-
-        run.finish()
-
-        update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
-        # Compute and record train-test overlap for this task using the same seeds
-        x_tr, _ = prepare_data(n_samples=N_SAMPLES, seed=0, task=task)
-        x_te, _ = prepare_data(n_samples=N_SAMPLES, seed=1, task=task)
-        update_overlap_csv(task=task, x=x_tr, x_test=x_te, csv_path="benchmarks/overlap.csv")
-
-    # Refresh comparison dashboard after all tasks are processed
-    generate_benchmark_html(csv_path="benchmarks/benchmarking.csv", html_path="benchmarks/index.html", overlap_csv_path="benchmarks/overlap.csv")
+    run_all_tasks_and_reports(
+        n_samples=N_SAMPLES,
+        seed=0,
+        tasks=TASKS,
+        model_names=MODELS,
+    )
 
 
 if __name__ == "__main__":
