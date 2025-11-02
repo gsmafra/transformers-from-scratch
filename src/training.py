@@ -174,7 +174,6 @@ def run_training(
         results[mdl.name if hasattr(mdl, "name") else name] = artifacts
 
     update_overlap_csv(task=task, x=x, x_test=x_test)
-    run.finish()
 
     return results
 

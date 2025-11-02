@@ -5,6 +5,7 @@ from .sign_of_second_place import SignOfSecondPlaceTask
 from .single_digit_sum import SingleDigitSumTask
 from .single_digit_sum_swapped import SingleDigitSumSwappedTask
 from .multi_digit_sum import MultiDigitSumTask
+from .aa_plus_bb_equals_cc import AAPlusBBEqualsCCTask
 from .sign_of_winner import SignOfWinnerTask
 
 
@@ -19,6 +20,7 @@ TASK_REGISTRY = {
     "any_abs_gt_one": AnyAbsGreaterThanOneTask(),
     "single_digit_sum": SingleDigitSumTask(),
     "single_digit_sum_swapped": SingleDigitSumSwappedTask(),
+    "aa+bb=cc": AAPlusBBEqualsCCTask(),
     "multi_digit_sum": MultiDigitSumTask(),
 }
 

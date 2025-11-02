@@ -7,3 +7,4 @@ has_all_tokens,690,1000,0.690000
 any_abs_gt_one,0,1000,0.000000
 single_digit_string_sum,799,1000,0.799000
 single_digit_string_sum_swapped,688,1000,0.688000
+aa+bb=cc,38,1000,0.038000

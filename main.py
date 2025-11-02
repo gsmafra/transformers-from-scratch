@@ -11,6 +11,7 @@ TASKS = [
     "any_abs_gt_one",
     "single_digit_sum",
     "single_digit_sum_swapped",
+    "aa+bb=cc",
     "multi_digit_sum",
 ]
 MODELS = [

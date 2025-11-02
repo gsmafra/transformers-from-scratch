@@ -131,17 +131,24 @@
       </tr>
       
       <tr>
-        <td data-key="task">single_digit_sum</td>
+        <td data-key="task">single_digit_string_sum</td>
         <td data-key="overlap_count" class="num">799</td>
         <td data-key="test_total" class="num">1000</td>
         <td data-key="overlap_rate" class="num">0.799000</td>
       </tr>
       
       <tr>
-        <td data-key="task">single_digit_sum_swapped</td>
+        <td data-key="task">single_digit_string_sum_swapped</td>
         <td data-key="overlap_count" class="num">688</td>
         <td data-key="test_total" class="num">1000</td>
         <td data-key="overlap_rate" class="num">0.688000</td>
+      </tr>
+      
+      <tr>
+        <td data-key="task">aa+bb=cc</td>
+        <td data-key="overlap_count" class="num">38</td>
+        <td data-key="test_total" class="num">1000</td>
+        <td data-key="overlap_rate" class="num">0.038000</td>
       </tr>
       
     </tbody>
@@ -152,6 +159,8 @@
     <thead>
       <tr>
         <th data-key="model" onclick="sortTable(this)">Model</th>
+        
+          <th data-key="aa+bb=cc" onclick="sortTable(this)">aa+bb=cc</th>
         
           <th data-key="any_abs_gt_one" onclick="sortTable(this)">any_abs_gt_one</th>
         
@@ -176,6 +185,9 @@
       
       <tr>
         <td data-key="model">bahdanau_attention</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.582000" data-loss="0.677505" class="num">0.582000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.988000" data-loss="0.076773" class="num">0.988000</td>
@@ -202,11 +214,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.965000" data-loss="0.115967" class="num">0.965000</td>
         
         
-        <td data-key="avg" data-acc="0.914625" data-loss="0.169221" class="num">0.914625</td>
+        <td data-key="avg" data-acc="0.877667" data-loss="0.225697" class="num">0.877667</td>
       </tr>
       
       <tr>
         <td data-key="model">logreg</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.636000" data-loss="0.715891" class="num">0.636000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.496000" data-loss="0.755282" class="num">0.496000</td>
@@ -233,11 +248,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.603000" data-loss="0.747911" class="num">0.603000</td>
         
         
-        <td data-key="avg" data-acc="0.606750" data-loss="0.697570" class="num">0.606750</td>
+        <td data-key="avg" data-acc="0.610000" data-loss="0.699606" class="num">0.610000</td>
       </tr>
       
       <tr>
         <td data-key="model">mlp</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="1.000000" data-loss="0.002093" class="num">1.000000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="1.000000" data-loss="0.007196" class="num">1.000000</td>
@@ -264,11 +282,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="1.000000" data-loss="0.002200" class="num">1.000000</td>
         
         
-        <td data-key="avg" data-acc="0.990000" data-loss="0.032910" class="num">0.990000</td>
+        <td data-key="avg" data-acc="0.991111" data-loss="0.029486" class="num">0.991111</td>
       </tr>
       
       <tr>
         <td data-key="model">multilayer_transformer</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="1.000000" data-loss="0.000002" class="num">1.000000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="1.000000" data-loss="0.000057" class="num">1.000000</td>
@@ -295,11 +316,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.998000" data-loss="0.012087" class="num">0.998000</td>
         
         
-        <td data-key="avg" data-acc="0.998000" data-loss="0.012231" class="num">0.998000</td>
+        <td data-key="avg" data-acc="0.998222" data-loss="0.010872" class="num">0.998222</td>
       </tr>
       
       <tr>
         <td data-key="model">self_attention</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.561000" data-loss="0.686930" class="num">0.561000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.974000" data-loss="0.102223" class="num">0.974000</td>
@@ -326,12 +350,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.841000" data-loss="0.226305" class="num">0.841000</td>
         
         
-        <td data-key="avg" data-acc="0.886500" data-loss="0.201142" class="num">0.886500</td>
+        <td data-key="avg" data-acc="0.850333" data-loss="0.255118" class="num">0.850333</td>
       </tr>
-      
       
       <tr>
         <td data-key="model">singlelayer_transformer</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.500000" data-loss="0.694604" class="num">0.500000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.871000" data-loss="0.310616" class="num">0.871000</td>
@@ -358,11 +384,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="1.000000" data-loss="0.003240" class="num">1.000000</td>
         
         
-        <td data-key="avg" data-acc="0.899750" data-loss="0.214560" class="num">0.899750</td>
+        <td data-key="avg" data-acc="0.855333" data-loss="0.267898" class="num">0.855333</td>
       </tr>
       
       <tr>
         <td data-key="model">temporal</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.566000" data-loss="0.664885" class="num">0.566000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.953000" data-loss="0.165036" class="num">0.953000</td>
@@ -389,7 +418,7 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.614000" data-loss="0.665310" class="num">0.614000</td>
         
         
-        <td data-key="avg" data-acc="0.684625" data-loss="0.541155" class="num">0.684625</td>
+        <td data-key="avg" data-acc="0.671444" data-loss="0.554903" class="num">0.671444</td>
       </tr>
       
     </tbody>
@@ -400,6 +429,8 @@
     <thead>
       <tr>
         <th data-key="model" onclick="sortTable(this)">Model</th>
+        
+          <th data-key="aa+bb=cc" onclick="sortTable(this)">aa+bb=cc</th>
         
           <th data-key="any_abs_gt_one" onclick="sortTable(this)">any_abs_gt_one</th>
         
@@ -426,6 +457,9 @@
         <td data-key="model">bahdanau_attention</td>
         
           
+          <td data-key="aa+bb=cc" data-acc="0.574000" data-loss="0.686067" class="num">0.574000</td>
+        
+          
           <td data-key="any_abs_gt_one" data-acc="0.963000" data-loss="0.096162" class="num">0.963000</td>
         
           
@@ -450,11 +484,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.957000" data-loss="0.128181" class="num">0.957000</td>
         
         
-        <td data-key="avg" data-acc="0.893500" data-loss="0.218585" class="num">0.893500</td>
+        <td data-key="avg" data-acc="0.858000" data-loss="0.270528" class="num">0.858000</td>
       </tr>
       
       <tr>
         <td data-key="model">logreg</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.614000" data-loss="0.754988" class="num">0.614000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.460000" data-loss="0.720787" class="num">0.460000</td>
@@ -478,14 +515,17 @@
           <td data-key="single_digit_sum" data-acc="0.584000" data-loss="0.685937" class="num">0.584000</td>
         
           
-          <td data-key="single_digit_string_sum_swapped" data-acc="0.548000" data-loss="0.763987" class="num">0.548000</td>
+          <td data-key="single_digit_sum_swapped" data-acc="0.548000" data-loss="0.763987" class="num">0.548000</td>
         
         
-        <td data-key="avg" data-acc="0.565500" data-loss="0.694062" class="num">0.565500</td>
+        <td data-key="avg" data-acc="0.570889" data-loss="0.700832" class="num">0.570889</td>
       </tr>
       
       <tr>
         <td data-key="model">mlp</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.724000" data-loss="1.206618" class="num">0.724000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.790000" data-loss="0.829142" class="num">0.790000</td>
@@ -512,11 +552,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.948000" data-loss="0.224002" class="num">0.948000</td>
         
         
-        <td data-key="avg" data-acc="0.846875" data-loss="0.599907" class="num">0.846875</td>
+        <td data-key="avg" data-acc="0.833222" data-loss="0.667319" class="num">0.833222</td>
       </tr>
       
       <tr>
         <td data-key="model">multilayer_transformer</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.630000" data-loss="4.652828" class="num">0.630000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.958000" data-loss="0.306747" class="num">0.958000</td>
@@ -543,11 +586,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.988000" data-loss="0.066149" class="num">0.988000</td>
         
         
-        <td data-key="avg" data-acc="0.880625" data-loss="1.310675" class="num">0.880625</td>
+        <td data-key="avg" data-acc="0.852778" data-loss="1.682025" class="num">0.852778</td>
       </tr>
       
       <tr>
         <td data-key="model">self_attention</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.556000" data-loss="0.684117" class="num">0.556000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.975000" data-loss="0.085042" class="num">0.975000</td>
@@ -574,12 +620,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.816000" data-loss="0.269212" class="num">0.816000</td>
         
         
-        <td data-key="avg" data-acc="0.871000" data-loss="0.239713" class="num">0.871000</td>
+        <td data-key="avg" data-acc="0.836000" data-loss="0.289092" class="num">0.836000</td>
       </tr>
-      
       
       <tr>
         <td data-key="model">singlelayer_transformer</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.500000" data-loss="0.693230" class="num">0.500000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.823000" data-loss="0.430234" class="num">0.823000</td>
@@ -606,11 +654,14 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.976000" data-loss="0.113591" class="num">0.976000</td>
         
         
-        <td data-key="avg" data-acc="0.850625" data-loss="0.336109" class="num">0.850625</td>
+        <td data-key="avg" data-acc="0.811667" data-loss="0.375789" class="num">0.811667</td>
       </tr>
       
       <tr>
         <td data-key="model">temporal</td>
+        
+          
+          <td data-key="aa+bb=cc" data-acc="0.587000" data-loss="0.646521" class="num">0.587000</td>
         
           
           <td data-key="any_abs_gt_one" data-acc="0.943000" data-loss="0.166000" class="num">0.943000</td>
@@ -637,7 +688,7 @@
           <td data-key="single_digit_sum_swapped" data-acc="0.608000" data-loss="0.670840" class="num">0.608000</td>
         
         
-        <td data-key="avg" data-acc="0.659250" data-loss="0.568377" class="num">0.659250</td>
+        <td data-key="avg" data-acc="0.651222" data-loss="0.577059" class="num">0.651222</td>
       </tr>
       
     </tbody>

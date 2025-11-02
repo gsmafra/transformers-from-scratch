@@ -111,3 +111,17 @@ multilayer_transformer,single_digit_sum_swapped,0.998000,0.012087
 multilayer_transformer,single_digit_sum_swapped (test),0.988000,0.066149
 multilayer_transformer,multi_digit_sum,1.000000,0.000040
 multilayer_transformer,multi_digit_sum (test),0.488000,7.698397
+logreg,aa+bb=cc,0.636000,0.715891
+logreg,aa+bb=cc (test),0.614000,0.754988
+mlp,aa+bb=cc,1.000000,0.002093
+mlp,aa+bb=cc (test),0.724000,1.206618
+temporal,aa+bb=cc,0.566000,0.664885
+temporal,aa+bb=cc (test),0.587000,0.646521
+self_attention,aa+bb=cc,0.561000,0.686930
+self_attention,aa+bb=cc (test),0.556000,0.684117
+singlelayer_transformer,aa+bb=cc,0.500000,0.694604
+singlelayer_transformer,aa+bb=cc (test),0.500000,0.693230
+bahdanau_attention,aa+bb=cc,0.582000,0.677505
+bahdanau_attention,aa+bb=cc (test),0.574000,0.686067
+multilayer_transformer,aa+bb=cc,1.000000,0.000002
+multilayer_transformer,aa+bb=cc (test),0.630000,4.652828
