@@ -10,6 +10,7 @@ def generate_benchmark_html(
     csv_path: str = "benchmarks/benchmarking.csv",
     html_path: str = "benchmarks/index.html",
     title: str = "Model × Task Benchmarks",
+    overlap_csv_path: str = "benchmarks/overlap.csv",
 ) -> None:
     os.makedirs(os.path.dirname(html_path), exist_ok=True)
 
@@ -49,6 +50,45 @@ def generate_benchmark_html(
     tasks_train = sorted(tasks_train_set)
     tasks_test = sorted(tasks_test_set)
 
+    def _compute_averages(values: Dict[str, Dict[str, Dict[str, str]]], tasks: List[str]) -> Dict[str, Dict[str, str]]:
+        avgs: Dict[str, Dict[str, str]] = {}
+        for m, per_task in values.items():
+            accs: List[float] = []
+            losses: List[float] = []
+            for t in tasks:
+                cell = per_task.get(t)
+                if not cell:
+                    continue
+                a = cell.get("accuracy") or ""
+                l = cell.get("loss") or ""
+                try:
+                    if a != "":
+                        accs.append(float(a))
+                except ValueError:
+                    pass
+                try:
+                    if l != "":
+                        losses.append(float(l))
+                except ValueError:
+                    pass
+            acc_avg = sum(accs) / len(accs) if accs else None
+            loss_avg = sum(losses) / len(losses) if losses else None
+            avgs[m] = {
+                "accuracy": (f"{acc_avg:.6f}" if acc_avg is not None else ""),
+                "loss": (f"{loss_avg:.6f}" if loss_avg is not None else ""),
+            }
+        return avgs
+
+    avg_train = _compute_averages(values_train, tasks_train)
+    avg_test = _compute_averages(values_test, tasks_test)
+
+    # Load overlap stats if available
+    overlap_rows: List[dict] = []
+    if os.path.exists(overlap_csv_path):
+        with open(overlap_csv_path, "r", newline="") as f:
+            reader = csv.DictReader(f)
+            overlap_rows = list(reader)
+
     # Render using Jinja2 template; templates live at repo root under 'templates'
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     templates_dir = os.path.join(repo_root, "templates")
@@ -65,6 +105,9 @@ def generate_benchmark_html(
         tasks_test=tasks_test,
         values_train=values_train,
         values_test=values_test,
+        avg_train=avg_train,
+        avg_test=avg_test,
+        overlap_rows=overlap_rows,
     )
 
     with open(html_path, "w", encoding="utf-8") as f:

@@ -75,6 +75,22 @@
     <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
     <button id="metric-loss" data-metric="loss">Loss</button>
   </div>
+  <h2 style="text-align:center; margin-top: 24px;">Overlap</h2>
+  <h3 style="text-align:center; margin-top: 12px;">Test-in-Train Overlap by Task</h3>
+  <table id="bench-overlap">
+    <thead>
+      <tr>
+        <th data-key="task" onclick="sortTable(this)">Task</th>
+        <th data-key="overlap_count" onclick="sortTable(this)">Overlap</th>
+        <th data-key="test_total" onclick="sortTable(this)">Test</th>
+        <th data-key="overlap_rate" onclick="sortTable(this)">Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+    </tbody>
+  </table>
+
   <h2 style="text-align:center; margin-top: 24px;">Train</h2>
   <table id="bench-train">
     <thead>
@@ -97,6 +113,7 @@
         
           <th data-key="single_digit_string_sum_swapped" onclick="sortTable(this)">single_digit_string_sum_swapped</th>
         
+        <th data-key="avg" onclick="sortTable(this)">Avg</th>
       </tr>
     </thead>
     <tbody>
@@ -128,6 +145,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.965000" data-loss="0.115967" class="num">0.965000</td>
         
+        
+        <td data-key="avg" data-acc="0.914625" data-loss="0.169221" class="num">0.914625</td>
       </tr>
       
       <tr>
@@ -157,6 +176,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.566000" data-loss="0.719243" class="num">0.566000</td>
         
+        
+        <td data-key="avg" data-acc="0.606875" data-loss="0.709579" class="num">0.606875</td>
       </tr>
       
       <tr>
@@ -186,6 +207,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="1.000000" data-loss="0.002200" class="num">1.000000</td>
         
+        
+        <td data-key="avg" data-acc="0.990000" data-loss="0.032910" class="num">0.990000</td>
       </tr>
       
       <tr>
@@ -201,7 +224,7 @@
           <td data-key="has_pos_and_neg" data-acc="1.000000" data-loss="0.000007" class="num">1.000000</td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.996000" data-loss="0.035819" class="num">0.996000</td>
+          <td data-key="multi_digit_sum" data-acc="1.000000" data-loss="0.000012" class="num">1.000000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="0.997000" data-loss="0.032178" class="num">0.997000</td>
@@ -215,6 +238,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.998000" data-loss="0.012087" class="num">0.998000</td>
         
+        
+        <td data-key="avg" data-acc="0.998000" data-loss="0.012227" class="num">0.998000</td>
       </tr>
       
       <tr>
@@ -244,6 +269,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.841000" data-loss="0.226305" class="num">0.841000</td>
         
+        
+        <td data-key="avg" data-acc="0.886500" data-loss="0.201142" class="num">0.886500</td>
       </tr>
       
       <tr>
@@ -273,6 +300,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.963000" data-loss="0.113421" class="num">0.963000</td>
         
+        
+        <td data-key="avg" data-acc="0.899125" data-loss="0.211628" class="num">0.899125</td>
       </tr>
       
       <tr>
@@ -302,6 +331,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="1.000000" data-loss="0.003240" class="num">1.000000</td>
         
+        
+        <td data-key="avg" data-acc="0.899750" data-loss="0.214560" class="num">0.899750</td>
       </tr>
       
       <tr>
@@ -331,6 +362,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.614000" data-loss="0.665310" class="num">0.614000</td>
         
+        
+        <td data-key="avg" data-acc="0.684625" data-loss="0.541155" class="num">0.684625</td>
       </tr>
       
     </tbody>
@@ -358,6 +391,7 @@
         
           <th data-key="single_digit_string_sum_swapped" onclick="sortTable(this)">single_digit_string_sum_swapped</th>
         
+        <th data-key="avg" onclick="sortTable(this)">Avg</th>
       </tr>
     </thead>
     <tbody>
@@ -389,6 +423,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.957000" data-loss="0.128181" class="num">0.957000</td>
         
+        
+        <td data-key="avg" data-acc="0.893500" data-loss="0.218585" class="num">0.893500</td>
       </tr>
       
       <tr>
@@ -418,6 +454,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.538000" data-loss="0.733067" class="num">0.538000</td>
         
+        
+        <td data-key="avg" data-acc="0.582750" data-loss="0.709781" class="num">0.582750</td>
       </tr>
       
       <tr>
@@ -447,6 +485,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.948000" data-loss="0.224002" class="num">0.948000</td>
         
+        
+        <td data-key="avg" data-acc="0.846875" data-loss="0.599907" class="num">0.846875</td>
       </tr>
       
       <tr>
@@ -462,7 +502,7 @@
           <td data-key="has_pos_and_neg" data-acc="0.985000" data-loss="0.110808" class="num">0.985000</td>
         
           
-          <td data-key="multi_digit_sum" data-acc="0.524000" data-loss="2.680567" class="num">0.524000</td>
+          <td data-key="multi_digit_sum" data-acc="0.561000" data-loss="5.632887" class="num">0.561000</td>
         
           
           <td data-key="sign_of_second_place" data-acc="0.668000" data-loss="2.185636" class="num">0.668000</td>
@@ -476,6 +516,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.988000" data-loss="0.066149" class="num">0.988000</td>
         
+        
+        <td data-key="avg" data-acc="0.889750" data-loss="1.052486" class="num">0.889750</td>
       </tr>
       
       <tr>
@@ -505,6 +547,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.816000" data-loss="0.269212" class="num">0.816000</td>
         
+        
+        <td data-key="avg" data-acc="0.871000" data-loss="0.239713" class="num">0.871000</td>
       </tr>
       
       <tr>
@@ -534,6 +578,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.961000" data-loss="0.137857" class="num">0.961000</td>
         
+        
+        <td data-key="avg" data-acc="0.853250" data-loss="0.293401" class="num">0.853250</td>
       </tr>
       
       <tr>
@@ -563,6 +609,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.976000" data-loss="0.113591" class="num">0.976000</td>
         
+        
+        <td data-key="avg" data-acc="0.850625" data-loss="0.336109" class="num">0.850625</td>
       </tr>
       
       <tr>
@@ -592,6 +640,8 @@
           
           <td data-key="single_digit_string_sum_swapped" data-acc="0.608000" data-loss="0.670840" class="num">0.608000</td>
         
+        
+        <td data-key="avg" data-acc="0.659250" data-loss="0.568377" class="num">0.659250</td>
       </tr>
       
     </tbody>
