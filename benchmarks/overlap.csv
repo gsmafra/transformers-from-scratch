@@ -1,0 +1,9 @@
+task,overlap_count,test_total,overlap_rate
+multi_digit_sum,0,1000,0.000000
+sign_of_winner,0,1000,0.000000
+sign_of_second_place,0,1000,0.000000
+has_pos_and_neg,0,1000,0.000000
+has_all_tokens,690,1000,0.690000
+any_abs_gt_one,0,1000,0.000000
+single_digit_string_sum,799,1000,0.799000
+single_digit_string_sum_swapped,688,1000,0.688000
