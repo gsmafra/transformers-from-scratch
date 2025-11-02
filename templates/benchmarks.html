@@ -75,6 +75,29 @@
     <button id="metric-accuracy" data-metric="accuracy">Accuracy</button>
     <button id="metric-loss" data-metric="loss">Loss</button>
   </div>
+  <h2 style="text-align:center; margin-top: 24px;">Overlap</h2>
+  <h3 style="text-align:center; margin-top: 12px;">Test-in-Train Overlap by Task</h3>
+  <table id="bench-overlap">
+    <thead>
+      <tr>
+        <th data-key="task" onclick="sortTable(this)">Task</th>
+        <th data-key="overlap_count" onclick="sortTable(this)">Overlap</th>
+        <th data-key="test_total" onclick="sortTable(this)">Test</th>
+        <th data-key="overlap_rate" onclick="sortTable(this)">Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in overlap_rows %}
+      <tr>
+        <td data-key="task">{{ r.task }}</td>
+        <td data-key="overlap_count" class="num">{{ r.overlap_count }}</td>
+        <td data-key="test_total" class="num">{{ r.test_total }}</td>
+        <td data-key="overlap_rate" class="num">{{ r.overlap_rate }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
   <h2 style="text-align:center; margin-top: 24px;">Train</h2>
   <table id="bench-train">
     <thead>
@@ -83,6 +106,7 @@
         {% for t in tasks_train %}
           <th data-key="{{ t }}" onclick="sortTable(this)">{{ t }}</th>
         {% endfor %}
+        <th data-key="avg" onclick="sortTable(this)">Avg</th>
       </tr>
     </thead>
     <tbody>
@@ -93,6 +117,8 @@
           {% set cell = values_train.get(m, {}).get(t) %}
           <td data-key="{{ t }}" data-acc="{{ cell.accuracy if cell else '' }}" data-loss="{{ cell.loss if cell else '' }}" class="num">{{ cell.accuracy if cell else '' }}</td>
         {% endfor %}
+        {% set avg = avg_train.get(m) %}
+        <td data-key="avg" data-acc="{{ avg.accuracy if avg else '' }}" data-loss="{{ avg.loss if avg else '' }}" class="num">{{ avg.accuracy if avg else '' }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -106,6 +132,7 @@
         {% for t in tasks_test %}
           <th data-key="{{ t }}" onclick="sortTable(this)">{{ t }}</th>
         {% endfor %}
+        <th data-key="avg" onclick="sortTable(this)">Avg</th>
       </tr>
     </thead>
     <tbody>
@@ -116,6 +143,8 @@
           {% set cell = values_test.get(m, {}).get(t) %}
           <td data-key="{{ t }}" data-acc="{{ cell.accuracy if cell else '' }}" data-loss="{{ cell.loss if cell else '' }}" class="num">{{ cell.accuracy if cell else '' }}</td>
         {% endfor %}
+        {% set avg = avg_test.get(m) %}
+        <td data-key="avg" data-acc="{{ avg.accuracy if avg else '' }}" data-loss="{{ avg.loss if avg else '' }}" class="num">{{ avg.accuracy if avg else '' }}</td>
       </tr>
       {% endfor %}
     </tbody>

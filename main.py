@@ -1,4 +1,5 @@
 from src.benchmarking.csv import update_benchmark_csv
+from src.benchmarking.overlap import update_overlap_csv
 from src.benchmarking.html import generate_benchmark_html
 from src.reporting.report import generate_run_report
 from src.training import run_training
@@ -51,6 +52,7 @@ def main():
         run.finish()
 
         update_benchmark_csv(task=task, results=run_artifacts, csv_path="benchmarks/benchmarking.csv")
+        update_overlap_csv(task=task, results=run_artifacts, csv_path="benchmarks/overlap.csv")
 
     # Refresh comparison dashboard after all tasks are processed
     generate_benchmark_html(csv_path="benchmarks/benchmarking.csv", html_path="benchmarks/index.html")

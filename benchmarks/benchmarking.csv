@@ -125,5 +125,5 @@ multilayer,single_digit_string_sum,0.990000,0.042160
 multilayer,single_digit_string_sum (test),0.969000,0.100411
 multilayer,single_digit_string_sum_swapped,0.998000,0.012087
 multilayer,single_digit_string_sum_swapped (test),0.988000,0.066149
-multilayer,multi_digit_sum,1.000000,0.000012
-multilayer,multi_digit_sum (test),0.561000,5.632887
+multilayer,multi_digit_sum,1.000000,0.000038
+multilayer,multi_digit_sum (test),0.609000,4.599459
