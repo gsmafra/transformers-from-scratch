@@ -27,10 +27,10 @@ class TwoLayerSelfAttentionQKVPosClassifier(Module):
         self.pe_scale = float(pe_scale)
         # Input projection to model dimension
         self.in_proj = Linear(n_features, d_model)
-        # Pre-norm layers (both in model space)
+        # Pre-norm layers
         self.ln1 = LayerNorm(d_model)
         self.ln2 = LayerNorm(d_model)
-        # Layer 1 projections and position-wise MLP (model space)
+        # Layer 1 projections and position-wise MLP
         self.q1 = Linear(d_model, d_model)
         self.k1 = Linear(d_model, d_model)
         self.v1 = Linear(d_model, d_model)
@@ -59,9 +59,7 @@ class TwoLayerSelfAttentionQKVPosClassifier(Module):
         h1 = torch.tanh(self.post1(c1))
         x1_out = x1 + h1
 
-        # Layer 2: add PE in model space
-        pe2 = sinusoidal_positional_encoding(T, self.d_model).unsqueeze(0)
-        x2 = x1_out + self.pe_scale * pe2
+        x2 = x1_out
         x2n = self.ln2(x2)
         q2 = self.q2(x2n)
         k2 = self.k2(x2n)
@@ -78,8 +76,8 @@ class TwoLayerSelfAttentionQKVPosClassifier(Module):
 
 class MultilayerAccess(ModelAccess):
     D_MODEL = 16
-    LR_START = 0.04
-    LR_END = 0.02
+    LR_START = 0.004
+    LR_END = 0.002
 
     def __init__(self, n_features: int) -> None:
         super().__init__(

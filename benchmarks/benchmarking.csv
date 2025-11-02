@@ -111,19 +111,19 @@ temporal,single_digit_string_sum (test),0.648000,0.691132
 self_attention,single_digit_string_sum (test),0.949000,0.190944
 self_attention_qkv,single_digit_string_sum (test),0.934000,0.199821
 attention,single_digit_string_sum (test),0.946000,0.183072
-multilayer,sign_of_winner,0.860000,0.312829
-multilayer,sign_of_winner (test),0.837000,0.363637
-multilayer,sign_of_second_place,0.762000,0.485422
-multilayer,sign_of_second_place (test),0.701000,0.589727
-multilayer,has_pos_and_neg,0.997000,0.008813
-multilayer,has_pos_and_neg (test),0.999000,0.013299
-multilayer,has_all_tokens,0.714000,0.515944
-multilayer,has_all_tokens (test),0.732000,0.505474
-multilayer,any_abs_gt_one,0.896000,0.274780
-multilayer,any_abs_gt_one (test),0.895000,0.270940
-multilayer,single_digit_string_sum,0.655000,0.612022
-multilayer,single_digit_string_sum (test),0.643000,0.629880
-multilayer,single_digit_string_sum_swapped,0.643000,0.599387
-multilayer,single_digit_string_sum_swapped (test),0.633000,0.617468
-multilayer,multi_digit_sum,0.532000,0.690212
-multilayer,multi_digit_sum (test),0.501000,0.697333
+multilayer,sign_of_winner,0.999000,0.011313
+multilayer,sign_of_winner (test),0.989000,0.017247
+multilayer,sign_of_second_place,0.997000,0.032178
+multilayer,sign_of_second_place (test),0.668000,2.185636
+multilayer,has_pos_and_neg,1.000000,0.000007
+multilayer,has_pos_and_neg (test),0.985000,0.110808
+multilayer,has_all_tokens,1.000000,0.000005
+multilayer,has_all_tokens (test),1.000000,0.000006
+multilayer,any_abs_gt_one,1.000000,0.000057
+multilayer,any_abs_gt_one (test),0.958000,0.306747
+multilayer,single_digit_string_sum,0.990000,0.042160
+multilayer,single_digit_string_sum (test),0.969000,0.100411
+multilayer,single_digit_string_sum_swapped,0.998000,0.012087
+multilayer,single_digit_string_sum_swapped (test),0.988000,0.066149
+multilayer,multi_digit_sum,0.996000,0.035819
+multilayer,multi_digit_sum (test),0.524000,2.680567
