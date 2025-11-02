@@ -7,6 +7,7 @@ from torch.nn import Linear, Module, LayerNorm
 
 from .base import ModelAccess
 from .metrics import summarize_stats
+from .mha import MultiHeadSelfAttention
 
 
 def sinusoidal_positional_encoding(T: int, d_model: int) -> Tensor:
@@ -48,15 +49,10 @@ class TransformerClassifier(Module):
         # Pre-norm layers
         self.ln1 = LayerNorm(d_model)
         self.ln2 = LayerNorm(d_model)
-        # Layer 1 projections and position-wise MLP
-        self.q1 = Linear(d_model, d_model)
-        self.k1 = Linear(d_model, d_model)
-        self.v1 = Linear(d_model, d_model)
+        # Multi-head attention layers + position-wise MLPs
+        self.mha1 = MultiHeadSelfAttention(d_model=d_model, n_heads=self.n_heads)
         self.post1 = Linear(d_model, d_model)
-        # Layer 2 projections and position-wise MLP
-        self.q2 = Linear(d_model, d_model)
-        self.k2 = Linear(d_model, d_model)
-        self.v2 = Linear(d_model, d_model)
+        self.mha2 = MultiHeadSelfAttention(d_model=d_model, n_heads=self.n_heads)
         self.post2 = Linear(d_model, d_model)
         # Classifier
         self.classifier = Linear(d_model, 1)
@@ -70,27 +66,13 @@ class TransformerClassifier(Module):
         pe1 = sinusoidal_positional_encoding(T + 1, self.d_model).unsqueeze(0)
         x1 = z0_with_cls + self.pe_scale * pe1
         x1n = self.ln1(x1)
-        H = self.n_heads
-        dk = self.d_model // H
-        q1 = _split_heads(self.q1(x1n), H)
-        k1 = _split_heads(self.k1(x1n), H)
-        v1 = _split_heads(self.v1(x1n), H)
-        s1 = torch.matmul(q1, k1.transpose(-2, -1)) / (dk ** 0.5)
-        a1 = torch.softmax(s1, dim=-1)
-        c1 = torch.matmul(a1, v1)
-        c1 = _combine_heads(c1)
+        c1 = self.mha1(x1n)
         h1 = F.gelu(self.post1(c1))
         x1_out = x1 + h1
 
         x2 = x1_out
         x2n = self.ln2(x2)
-        q2 = _split_heads(self.q2(x2n), H)
-        k2 = _split_heads(self.k2(x2n), H)
-        v2 = _split_heads(self.v2(x2n), H)
-        s2 = torch.matmul(q2, k2.transpose(-2, -1)) / (dk ** 0.5)
-        a2 = torch.softmax(s2, dim=-1)
-        c2 = torch.matmul(a2, v2)
-        c2 = _combine_heads(c2)
+        c2 = self.mha2(x2n)
         h2 = F.gelu(self.post2(c2))
         x2_out = x2 + h2
 
@@ -116,17 +98,6 @@ class MultilayerAccess(ModelAccess):
         return self.backbone.classifier
 
     def extra_metrics(self, x: Tensor) -> Dict[str, float]:
-        # Report first-layer attention logits on current input with PE1
-        N, T, _ = x.shape
-        z0 = self.backbone.in_proj(x)
-        cls = self.backbone.cls_token.expand(N, -1, -1)
-        z0_with_cls = torch.cat([cls, z0], dim=1)
-        pe1 = sinusoidal_positional_encoding(T + 1, self.backbone.d_model).unsqueeze(0)
-        x1 = z0_with_cls + self.backbone.pe_scale * pe1
-        x1n = self.backbone.ln1(x1)
-        H = self.backbone.n_heads
-        dk = self.backbone.d_model // H
-        q1 = _split_heads(self.backbone.q1(x1n), H)
-        k1 = _split_heads(self.backbone.k1(x1n), H)
-        logits = torch.matmul(q1, k1.transpose(-2, -1)) / (dk ** 0.5)
+        # Summarize the most recent first-layer attention logits captured during forward
+        logits = self.backbone.mha1.last_logits if self.backbone.mha1.last_logits is not None else torch.empty(0)
         return summarize_stats("attn_logits", logits)
